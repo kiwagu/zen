@@ -3,7 +3,6 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.js';
 
 import { environment } from '../environments/environment';
-import { ZenAuthModule } from './auth';
 import { ConfigModule, ConfigService } from './config';
 import { ToolsController } from './controllers';
 import { ZenGraphQLModule } from './graphql';
@@ -18,7 +17,6 @@ import { PrismaModule } from './prisma';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => config.throttle,
     }),
-    ZenAuthModule,
     ConfigModule,
     ZenGraphQLModule,
     JwtModule,
