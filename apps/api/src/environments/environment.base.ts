@@ -1,3 +1,4 @@
+import * as rfs from 'rotating-file-stream';
 import { MailerOptions } from '@nestjs-modules/mailer';
 import { NestApplicationOptions } from '@nestjs/common';
 import { JwtModuleOptions } from '@nestjs/jwt';
@@ -6,7 +7,10 @@ import { OTLPExporterNodeConfigBase } from '@opentelemetry/otlp-exporter-base';
 import { UploadOptions } from 'graphql-upload/graphqlUploadExpress.js';
 import { StrategyOptions as GoogleStrategyOptions } from 'passport-google-oauth20';
 
+export const serviceName = 'api';
+
 export abstract class EnvironmentBase {
+  serviceName: string;
   readonly siteUrl: string;
   readonly production: boolean;
   readonly expressPort: string | number;
@@ -38,4 +42,8 @@ export abstract class EnvironmentBase {
         };
         collectorOptions?: OTLPExporterNodeConfigBase;
       };
+  readonly ogma?: {
+    readonly logFilePath: string;
+    readonly options?: rfs.Options;
+  };
 }

@@ -1,8 +1,11 @@
 import 'dotenv/config';
 
-import { EnvironmentBase } from './environment.base';
+import { join } from 'path';
+
+import { EnvironmentBase, serviceName } from './environment.base';
 
 export const environment: EnvironmentBase = {
+  serviceName,
   siteUrl: 'http://localhost:4200/#',
   production: false,
   expressPort: 7080,
@@ -61,10 +64,17 @@ export const environment: EnvironmentBase = {
     },
   },
   openTelemetry: {
-    serviceName: 'zen-api',
+    serviceName,
     exporters: { enableOtlp: true },
     collectorOptions: {
       url: 'http://localhost:4318/v1/traces',
+    },
+  },
+  ogma: {
+    logFilePath: join(process.cwd(), `data/logs/${serviceName}.log`),
+    options: {
+      size: '10M', // rotate every 10 MegaBytes written
+      compress: 'gzip', // compress rotated files
     },
   },
 };

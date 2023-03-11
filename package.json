@@ -34,6 +34,9 @@
     "@nestjs/passport": "^9.0.3",
     "@nestjs/platform-express": "^9.3.9",
     "@nestjs/throttler": "^4.0.0",
+    "@ogma/nestjs-module": "^4.2.2",
+    "@ogma/platform-express": "^4.0.1",
+    "@ogma/platform-graphql": "^4.0.1",
     "@opentelemetry/exporter-trace-otlp-http": "^0.35.1",
     "@opentelemetry/instrumentation": "^0.35.1",
     "@opentelemetry/instrumentation-express": "^0.32.1",
@@ -64,6 +67,7 @@
     "passport-jwt": "^4.0.1",
     "prisma": "~4.11.0",
     "reflect-metadata": "^0.1.13",
+    "rotating-file-stream": "^3.1.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.5.0"
   },

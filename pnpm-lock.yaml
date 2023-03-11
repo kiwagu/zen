@@ -55,6 +55,9 @@ specifiers:
   '@nrwl/storybook': 15.8.6
   '@nrwl/webpack': 15.8.6
   '@nrwl/workspace': 15.8.6
+  '@ogma/nestjs-module': ^4.2.2
+  '@ogma/platform-express': ^4.0.1
+  '@ogma/platform-graphql': ^4.0.1
   '@opentelemetry/exporter-trace-otlp-http': ^0.35.1
   '@opentelemetry/instrumentation': ^0.35.1
   '@opentelemetry/instrumentation-express': ^0.32.1
@@ -126,6 +129,7 @@ specifiers:
   prettier-plugin-prisma: ^4.10.0
   prisma: ~4.11.0
   reflect-metadata: ^0.1.13
+  rotating-file-stream: ^3.1.0
   rxjs: ~7.8.0
   source-map-loader: ^4.0.1
   ts-jest: 29.0.5
@@ -149,6 +153,9 @@ dependencies:
   '@nestjs/passport': 9.0.3_v3ijvyhfbmibt6kvwmic262qla
   '@nestjs/platform-express': 9.3.9_77foi4w27ghy47yutmnzv7krjy
   '@nestjs/throttler': 4.0.0_shbtxdxgogsm4p64bg2toeylku
+  '@ogma/nestjs-module': 4.2.2_xap76i5unmrgcq3fgd6nhqgyvy
+  '@ogma/platform-express': 4.0.1_24trutt2bqqhndill6ejllqoom
+  '@ogma/platform-graphql': 4.0.1_6xdk7aizec4uxpyla5ya5uvkgi
   '@opentelemetry/exporter-trace-otlp-http': 0.35.1
   '@opentelemetry/instrumentation': 0.35.1
   '@opentelemetry/instrumentation-express': 0.32.1
@@ -179,6 +186,7 @@ dependencies:
   passport-jwt: 4.0.1
   prisma: 4.11.0
   reflect-metadata: 0.1.13
+  rotating-file-stream: 3.1.0
   rxjs: 7.8.0
   tslib: 2.5.0
 
@@ -7793,6 +7801,61 @@ packages:
     engines: {node: '>=12.0.0'}
     deprecated: Deprecated in favor of @oclif/core
     dev: true
+
+  /@ogma/common/1.0.0:
+    resolution: {integrity: sha512-IXvSnXbXccpxJR+UbN2fxp30R/44VFpx/T0ungb1PMwLa9BLmtbeQIXqc9TR11gRaDNY0e78tqVckau8oyXK0A==}
+    dev: false
+
+  /@ogma/logger/2.5.0:
+    resolution: {integrity: sha512-Uhn7MbDimmuFg5usKk7Drhrl98R7qTdl2HmhzWbY7+1qbc5N44V+Nwjm+vtgNhJPaBVS6t5GQiIo09xjsUraFA==}
+    engines: {node: '>=10'}
+    dependencies:
+      '@ogma/common': 1.0.0
+      '@ogma/styler': 1.0.0
+    dev: false
+
+  /@ogma/nestjs-module/4.2.2_xap76i5unmrgcq3fgd6nhqgyvy:
+    resolution: {integrity: sha512-kAViWB58Cr8NL3o93Ch5jwni4FlN2zMXlMKxMjaKAGSViSuioK3IcGPluq0K5IxZ08UWHNizi3pb/paFRJeR2Q==}
+    peerDependencies:
+      '@nestjs/common': ^9.0.0
+      '@nestjs/core': ^9.0.0
+      reflect-metadata: ^0.1.0
+      rxjs: ^7.0.0
+    dependencies:
+      '@nestjs/common': 9.3.9_welcnyot5bzd5wa2aovbkxpi4i
+      '@nestjs/core': 9.3.9_q6agyr4hwia55oswpsa7zjxcpm
+      '@ogma/logger': 2.5.0
+      reflect-metadata: 0.1.13
+      rxjs: 7.8.0
+    dev: false
+
+  /@ogma/platform-express/4.0.1_24trutt2bqqhndill6ejllqoom:
+    resolution: {integrity: sha512-t/buwB86C3z7dPWb1Pf6uhf4jccuRG7SqDiCgGvG4iy3fio2mQzMP8lWC65Pj+44yERCJeaQR4ve0SoQzGVAZQ==}
+    peerDependencies:
+      '@nestjs/platform-express': ^9.0.0
+      '@ogma/nestjs-module': ^4.0.0
+    dependencies:
+      '@nestjs/platform-express': 9.3.9_77foi4w27ghy47yutmnzv7krjy
+      '@ogma/nestjs-module': 4.2.2_xap76i5unmrgcq3fgd6nhqgyvy
+    dev: false
+
+  /@ogma/platform-graphql/4.0.1_6xdk7aizec4uxpyla5ya5uvkgi:
+    resolution: {integrity: sha512-QEPOzgv9HE9QNcyxpDLdbhh9mSjjmC2mD3vEdgXBiREqlikH1sgPNCCqjUvKV/ZOBKOo2ocOzYHfU+c1wtcSXw==}
+    peerDependencies:
+      '@nestjs/graphql': ^10.0.0
+      '@ogma/nestjs-module': ^4.0.0
+      '@ogma/platform-express': ^4.0.0
+    dependencies:
+      '@nestjs/graphql': 11.0.0_mx67tdfoah2i42xit4xgrngpmm
+      '@ogma/nestjs-module': 4.2.2_xap76i5unmrgcq3fgd6nhqgyvy
+      '@ogma/platform-express': 4.0.1_24trutt2bqqhndill6ejllqoom
+    dev: false
+
+  /@ogma/styler/1.0.0:
+    resolution: {integrity: sha512-Twtijg2eUS4HEPyic0FEpkdJgRtLSvVow/3gmLsMkyU+GhSm80PnRlc6q1N1rmf1EQhuwGZLKhS30sYIuFV38A==}
+    dependencies:
+      '@ogma/common': 1.0.0
+    dev: false
 
   /@opentelemetry/api/1.4.0:
     resolution: {integrity: sha512-IgMK9i3sFGNUqPMbjABm0G26g0QCKCUBfglhQ7rQq6WcxbKfEHRcmwsoER4hZcuYqJgkYn2OeuoJIv7Jsftp7g==}
@@ -23616,6 +23679,11 @@ packages:
       hash-base: 3.1.0
       inherits: 2.0.4
     dev: true
+
+  /rotating-file-stream/3.1.0:
+    resolution: {integrity: sha512-TkMF6cP1/QDcon9D71mjxHoflNuznNOrY5JJQfuxkKklZRmoow/lWBLNxXVjb6KcjAU8BDCV145buLgOx9Px1Q==}
+    engines: {node: '>=14.0'}
+    dev: false
 
   /rsvp/4.8.5:
     resolution: {integrity: sha512-nfMOlASu9OnRJo1mbEk2cz0D56a1MBNrJ7orjRZQG10XDyuvwksKbuXNp6qa+kbn839HwjwhBzhFmdsaEAfauA==}

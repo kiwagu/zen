@@ -1,6 +1,7 @@
-import { EnvironmentBase } from './environment.base';
+import { EnvironmentBase, serviceName } from './environment.base';
 
 export const environment: EnvironmentBase = {
+  serviceName,
   siteUrl: 'https://site.com/#',
   production: true,
   expressPort: process.env.PORT as string,
@@ -59,10 +60,10 @@ export const environment: EnvironmentBase = {
     },
   },
   openTelemetry: {
-    serviceName: 'zen-api',
+    serviceName,
     exporters: { enableOtlp: true },
     collectorOptions: {
       url: 'http://localhost:4318/v1/traces',
     },
-  },
+  }
 };
