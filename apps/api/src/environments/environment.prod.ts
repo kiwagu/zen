@@ -63,7 +63,7 @@ export const environment: EnvironmentBase = {
     serviceName,
     exporters: { enableOtlp: true },
     collectorOptions: {
-      url: 'http://localhost:4318/v1/traces',
+      url: 'http://localhost:4317',
     },
   }
 };

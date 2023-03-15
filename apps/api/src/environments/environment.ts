@@ -65,9 +65,12 @@ export const environment: EnvironmentBase = {
   },
   openTelemetry: {
     serviceName,
-    exporters: { enableOtlp: true },
+    exporters: {
+      enableOtlp: true,
+      // enableConsole: true
+    },
     collectorOptions: {
-      url: 'http://localhost:4318/v1/traces',
+      url: 'http://localhost:4317',
     },
   },
   ogma: {

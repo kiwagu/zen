@@ -1,4 +1,4 @@
-import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-grpc';
 import { registerInstrumentations } from '@opentelemetry/instrumentation';
 import { ExpressInstrumentation } from '@opentelemetry/instrumentation-express';
 import { GraphQLInstrumentation } from '@opentelemetry/instrumentation-graphql';

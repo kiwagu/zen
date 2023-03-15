@@ -47,4 +47,5 @@ Thumbs.db
 
 .angular
 /upload
-/data/logs
+/data/*
+!/data/grafana-data

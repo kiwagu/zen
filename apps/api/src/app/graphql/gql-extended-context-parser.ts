@@ -49,7 +49,7 @@ export class GqlWithBodyParser extends GraphQLParser {
     context: ExecutionContext,
     startTime: number,
     options: OgmaInterceptorServiceOptions
-  ): LogObject & { error: (Error | HttpException) } {
+  ): LogObject & { error: Error | HttpException } {
     return {
       callerAddress: this.getCallerIp(context),
       method: this.getMethod(context),
