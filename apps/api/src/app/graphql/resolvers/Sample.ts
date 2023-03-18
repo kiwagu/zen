@@ -1,12 +1,13 @@
 import { createWriteStream, existsSync, mkdirSync } from 'fs';
 
-import { Logger, OnModuleInit, UseGuards } from '@nestjs/common';
-import { Args, Mutation, Resolver, Subscription } from '@nestjs/graphql';
+import { Inject, Logger, OnModuleInit, UseGuards } from '@nestjs/common';
+import { Args, Mutation, Query, Resolver, Subscription } from '@nestjs/graphql';
+import { ClientProxy } from '@nestjs/microservices';
 import { CurrentUser, RequestUser, RolesGuard } from '@zen/nest-auth';
 import { PubSub } from 'graphql-subscriptions';
 import gql from 'graphql-tag';
 import GraphQLUpload from 'graphql-upload/GraphQLUpload.js';
-import { interval } from 'rxjs';
+import { interval, throwError, timeout } from 'rxjs';
 
 import type { Upload } from '../models';
 
@@ -14,6 +15,10 @@ export const typeDefs = gql`
   extend type Mutation {
     sampleUpload(file: Upload!): [String!]!
     sampleUploadMany(files: [Upload!]!): [String!]!
+  }
+
+  extend type Query {
+    hi: String!
   }
 
   type SampleSubscriptionResult {
@@ -40,6 +45,8 @@ interval(1000).subscribe(i =>
 export class SampleResolver implements OnModuleInit {
   UPLOAD_PATH = './upload/';
 
+  constructor(@Inject('GATEWAY_SERVICE') private client: ClientProxy) {}
+
   onModuleInit() {
     if (!existsSync(this.UPLOAD_PATH)) {
       Logger.log('Creating directory', this.UPLOAD_PATH);
@@ -61,6 +68,16 @@ export class SampleResolver implements OnModuleInit {
   async sampleSubscription(@CurrentUser() user: RequestUser) {
     Logger.log(`sampleSubscription subscribed to by user with id ${user.id}`);
     return pubSub.asyncIterator('sampleSubscription');
+  }
+
+  @Query()
+  hi() {
+    return this.client.send({ cmd: 'hi' }, {}).pipe(
+      timeout({
+        each: 5000,
+        with: () => throwError(() => new Error('Too long')),
+      })
+    );
   }
 
   async saveFiles(files: Promise<Upload>[]) {
