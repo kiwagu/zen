@@ -2,7 +2,6 @@ import { ApolloDriver } from '@nestjs/apollo';
 import { Global, Module } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-import { OgmaModule } from '@ogma/nestjs-module';
 
 import { ZenAuthModule } from '../auth';
 import { ConfigModule } from '../config';
@@ -10,7 +9,6 @@ import { MailModule } from '../mail';
 import { PrismaModule } from '../prisma';
 import { GqlConfigService } from './gql-config.service';
 import { NEST_RESOLVERS } from './resolvers';
-import { AuthResolver } from './resolvers/Auth';
 
 @Global()
 @Module({
@@ -23,7 +21,6 @@ import { AuthResolver } from './resolvers/Auth';
       useClass: GqlConfigService,
       imports: [PrismaModule, ConfigModule],
     }),
-    OgmaModule.forFeature(AuthResolver),
     ClientsModule.register([
       {
         name: 'GATEWAY_SERVICE',
