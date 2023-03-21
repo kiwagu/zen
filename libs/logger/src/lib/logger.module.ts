@@ -3,6 +3,7 @@ import { join } from 'path';
 import { DynamicModule, Module } from '@nestjs/common';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { OgmaInterceptor, OgmaInterceptorOptions, OgmaModule } from '@ogma/nestjs-module';
+import * as otelApi from '@opentelemetry/api';
 import * as rfs from 'rotating-file-stream';
 
 import { environment } from '../environments/environment';
@@ -42,10 +43,32 @@ export class LoggerModule {
             json: true,
             stream: {
               write(msg) {
-                console.log(JSON.parse(String(msg)), '\n');
+                const parsedLog = JSON.parse(String(msg));
+
+                // A little cleaninig
+                delete parsedLog.ool
+                if (parsedLog.correlationId === '') {
+                  delete parsedLog.correlationId
+                }
+
+                let traceId = null;
+
+                if (!parsedLog.traceId) {
+                  const span = otelApi.trace.getActiveSpan();
+                  traceId = span?.spanContext().traceId;
+
+                  if (traceId) {
+                    parsedLog.traceId = traceId;
+                  }
+                }
+
+                // It's pretty enough for showing a colored log
+                console.log(parsedLog, '\n');
 
                 if (writable) {
-                  writable.write(Buffer.from(msg as string));
+                  writable.write(
+                    Buffer.from(traceId ? JSON.stringify(parsedLog) + '\n' : (msg as string))
+                  );
                 }
               },
             },
