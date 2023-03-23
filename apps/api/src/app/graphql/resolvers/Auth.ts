@@ -1,16 +1,17 @@
 import crypto from 'crypto';
 
-import { HttpException, Logger, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { HttpException, Inject, Logger, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { ClientProxy } from '@nestjs/microservices';
 import { Throttle } from '@nestjs/throttler';
 import { ApiError } from '@zen/common';
 import { CurrentUser, JwtPayload, RequestUser, RolesGuard } from '@zen/nest-auth';
-import { GraphQLError } from 'graphql';
 import gql from 'graphql-tag';
 import { bcrypt, bcryptVerify } from 'hash-wasm';
 
 import { AuthService } from '../../auth';
 import { ConfigService } from '../../config';
+import { AuthSession } from '../../graphql/models/auth-session';
 import { JwtService } from '../../jwt';
 import { MailService } from '../../mail';
 import { PrismaClient, PrismaService } from '../../prisma';
@@ -99,6 +100,7 @@ export const typeDefs = gql`
 @Throttle()
 export class AuthResolver {
   constructor(
+    @Inject('GATEWAY_SERVICE') private client: ClientProxy,
     private readonly auth: AuthService,
     private readonly config: ConfigService,
     private readonly jwtService: JwtService,
@@ -108,17 +110,7 @@ export class AuthResolver {
 
   @Query()
   async authLogin(@Args('data') args: AuthLoginInput) {
-    const user = await this.getUserByUsername(args.username, this.prisma);
-
-    if (!user) throw new HttpException(ApiError.AuthLogin.USER_NOT_FOUND, 400);
-
-    const correctPassword = await bcryptVerify({
-      password: args.password,
-      hash: user.password as string,
-    });
-    if (!correctPassword) throw new HttpException(ApiError.AuthLogin.INCORRECT_PASSWORD, 400);
-
-    return this.auth.getAuthSession(user, args.rememberMe);
+    return this.client.send<AuthSession, AuthLoginInput>({ cmd: 'authLogin' }, args);
   }
 
   @Query()

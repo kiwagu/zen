@@ -6,6 +6,8 @@ import { LogObject } from '@ogma/nestjs-module/src/interceptor/interfaces/log.in
 import { GraphQLParser } from '@ogma/platform-graphql';
 import * as otelApi from '@opentelemetry/api';
 
+import { RpcError } from '@zen/common';
+
 @Injectable()
 export class GqlWithBodyParser extends GraphQLParser {
   getSuccessContext(
@@ -28,15 +30,18 @@ export class GqlWithBodyParser extends GraphQLParser {
   }
 
   getErrorContext(
-    error: Error | HttpException,
+    error: Error | HttpException | RpcError,
     context: ExecutionContext,
     startTime: number,
     options: OgmaInterceptorServiceOptions
   ): LogObject & { error: Error | HttpException; traceId?: string; spanId?: string } {
     const span = otelApi.trace.getActiveSpan();
+    const logObject = super.getErrorContext(error, context, startTime, options);
+    const status = (error as RpcError).status;
 
     return {
-      ...super.getErrorContext(error, context, startTime, options),
+      ...logObject,
+      status: status ? `${status}` : logObject.status,
       error,
       traceId: span?.spanContext().traceId,
       spanId: span?.spanContext().spanId,
