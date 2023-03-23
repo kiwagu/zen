@@ -1,9 +1,11 @@
 import { Controller } from '@nestjs/common';
 import { MessagePattern, RpcException } from '@nestjs/microservices';
 import { ApiError, RpcError } from '@zen/common';
+import { RequestUser } from '@zen/nest-auth';
 import { bcryptVerify } from 'hash-wasm';
 
 import { AppService } from './app.service';
+import { AccountInfo } from './models/account-info';
 import { AuthLoginInput } from './models/auth-login-input';
 import { PrismaService } from './prisma';
 
@@ -40,5 +42,27 @@ export class AppController {
     }
 
     return this.appService.getAuthSession(user, args.rememberMe);
+  }
+
+  @MessagePattern({ cmd: 'accountInfo' })
+  async accountInfo(args: RequestUser) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: args.id },
+    });
+
+    if (!user) {
+      throw new RpcException({
+        response: ApiError.AuthLogin.USER_NOT_FOUND,
+        status: 404,
+        message: 'User not found',
+        name: RpcException.name,
+      } as RpcError);
+    }
+
+    return {
+      username: user.username,
+      hasPassword: !!user.password,
+      googleProfile: user.googleProfile as AccountInfo['googleProfile'],
+    };
   }
 }

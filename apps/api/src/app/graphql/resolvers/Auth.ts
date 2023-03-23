@@ -109,24 +109,14 @@ export class AuthResolver {
   ) {}
 
   @Query()
-  async authLogin(@Args('data') args: AuthLoginInput) {
+  authLogin(@Args('data') args: AuthLoginInput) {
     return this.client.send<AuthSession, AuthLoginInput>({ cmd: 'authLogin' }, args);
   }
 
   @Query()
   @UseGuards(RolesGuard())
-  async accountInfo(@CurrentUser() reqUser: RequestUser): Promise<AccountInfo> {
-    const user = await this.prisma.user.findUnique({
-      where: { id: reqUser.id },
-    });
-
-    if (!user) throw new UnauthorizedException('User not found');
-
-    return {
-      username: user.username,
-      hasPassword: !!user.password,
-      googleProfile: user.googleProfile as AccountInfo['googleProfile'],
-    };
+  accountInfo(@CurrentUser() args: RequestUser) {
+    return this.client.send<AccountInfo, RequestUser>({ cmd: 'accountInfo' }, args);
   }
 
   @Query()
