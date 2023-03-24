@@ -5,9 +5,9 @@ import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { ClientProxy } from '@nestjs/microservices';
 import { Throttle } from '@nestjs/throttler';
 import { ApiError } from '@zen/common';
-import { CurrentUser, JwtPayload, RequestUser, RolesGuard } from '@zen/nest-auth';
+import { CurrentUser, RequestUser, RolesGuard } from '@zen/nest-auth';
 import gql from 'graphql-tag';
-import { bcrypt, bcryptVerify } from 'hash-wasm';
+import { bcrypt } from 'hash-wasm';
 
 import { AuthService } from '../../auth';
 import { ConfigService } from '../../config';
@@ -125,15 +125,10 @@ export class AuthResolver {
     @CurrentUser() reqUser: RequestUser,
     @Args('data') args: AuthExchangeTokenInput
   ) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: reqUser.id },
-    });
-
-    if (user) {
-      return this.auth.getAuthSession(user, args.rememberMe);
-    } else {
-      throw new UnauthorizedException('User not found');
-    }
+    return this.client.send<AccountInfo, AuthExchangeTokenInput & { userId: string }>(
+      { cmd: 'authExchangeToken' },
+      { ...args, userId: reqUser.id }
+    );
   }
 
   @Query()
@@ -165,26 +160,11 @@ export class AuthResolver {
   }
 
   @Mutation()
-  async authPasswordResetConfirmation(@Args('data') args: AuthPasswordResetConfirmationInput) {
-    let tokenPayload: JwtPayload;
-    try {
-      tokenPayload = this.jwtService.verify(args.token);
-    } catch {
-      throw new UnauthorizedException('JWT failed verification');
-    }
-
-    let user = await this.prisma.user.findUnique({ where: { id: tokenPayload.sub } });
-
-    if (!user) throw new UnauthorizedException('User not found');
-
-    const hashedPassword = await this.hashPassword(args.newPassword);
-
-    user = await this.prisma.user.update({
-      where: { id: user.id },
-      data: { password: hashedPassword },
-    });
-
-    return this.auth.getAuthSession(user);
+  authPasswordResetConfirmation(@Args('data') args: AuthPasswordResetConfirmationInput) {
+    return this.client.send<AccountInfo, AuthPasswordResetConfirmationInput>(
+      { cmd: 'authPasswordResetConfirmation' },
+      args
+    );
   }
 
   @Mutation()
@@ -231,25 +211,14 @@ export class AuthResolver {
 
   @Mutation()
   @UseGuards(RolesGuard())
-  async authPasswordChange(
+  authPasswordChange(
     @Args('data') args: AuthPasswordChangeInput,
     @CurrentUser() reqUser: RequestUser
   ) {
-    const user = await this.prisma.user.findUnique({ where: { id: reqUser.id } });
-    if (!user) throw new UnauthorizedException('User not found');
-
-    const correctPassword = await bcryptVerify({
-      password: args.oldPassword,
-      hash: user.password as string,
-    });
-    if (!correctPassword) throw new HttpException(ApiError.AuthPasswordChange.WRONG_PASSWORD, 400);
-
-    const hashedPassword = await this.hashPassword(args.newPassword);
-
-    await this.prisma.user.update({
-      where: { id: user.id },
-      data: { password: hashedPassword },
-    });
+    return this.client.send<true, AuthPasswordChangeInput & { userId: string }>(
+      { cmd: 'authPasswordChange' },
+      { ...args, userId: reqUser.id }
+    );
   }
 
   private async getUserByUsername(username: string, prisma: PrismaClient) {

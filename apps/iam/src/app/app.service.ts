@@ -1,13 +1,15 @@
-import { randomUUID } from 'crypto';
-
 import { Injectable } from '@nestjs/common';
+
+import crypto from 'crypto';
+import { bcrypt } from 'hash-wasm';
+
 import { CaslFactory, JwtPayload, RequestUser } from '@zen/nest-auth';
 
 import { AppAbility } from './casl/casl.factory';
 import { ConfigService } from './config';
+import { JwtService } from './jwt';
 import { AuthSession } from './models/auth-session';
 import { PrismaClient } from './prisma';
-import { JwtService } from './jwt';
 
 @Injectable()
 export class AppService {
@@ -17,7 +19,7 @@ export class AppService {
     private readonly caslFactory: CaslFactory
   ) {}
 
-  public async getUserByUsername(username: string, prisma: PrismaClient) {
+  public getUserByUsername(username: string, prisma: PrismaClient) {
     return prisma.user.findFirst({
       where: {
         username: {
@@ -30,7 +32,7 @@ export class AppService {
 
   async getAuthSession(user: RequestUser, rememberMe = false): Promise<AuthSession> {
     const jwtPayload: JwtPayload = {
-      jti: randomUUID(),
+      jti: crypto.randomUUID(),
       aud: this.config.siteUrl,
       sub: user.id,
       roles: user.roles,
@@ -39,7 +41,6 @@ export class AppService {
     const expiresIn = rememberMe
       ? this.config.expiresInRememberMe
       : (this.config.jwtOptions.signOptions?.expiresIn as number);
-
 
     const token = this.jwtService.sign(jwtPayload, { expiresIn });
 
@@ -55,7 +56,15 @@ export class AppService {
     };
   }
 
-  async createAbility(user: RequestUser): Promise<AppAbility> {
+  createAbility(user: RequestUser): Promise<AppAbility> {
     return this.caslFactory.createAbility(user);
+  }
+
+  hashPassword(password: string) {
+    return bcrypt({
+      costFactor: this.config.bcryptCost,
+      password,
+      salt: crypto.getRandomValues(new Uint8Array(16)),
+    });
   }
 }

@@ -18,4 +18,5 @@ export enum AuthRegister {
 
 export enum AuthPasswordChange {
   WRONG_PASSWORD = 'WRONG_PASSWORD',
+  JWT_FAILED_VERIFICATION = 'JWT_FAILED_VERIFICATION',
 }
