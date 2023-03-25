@@ -2,11 +2,11 @@ import { subject } from '@casl/ability';
 import { ForbiddenException, Inject, UseGuards } from '@nestjs/common';
 import { Args, Info, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import type { NonNullableFields } from '@zen/common';
-import { CaslAbility, CaslGuard } from '@zen/nest-auth';
+import { CaslAbility, CaslFactory, CaslGuard } from '@zen/nest-auth';
 import { GraphQLResolveInfo } from 'graphql';
 import { gql } from 'graphql-tag';
 
-import { AuthService, DEFAULT_FIELDS_TOKEN } from '../../auth';
+import { DEFAULT_FIELDS_TOKEN } from '../../auth';
 import type { AppAbility } from '../../auth';
 import { DefaultFields, PrismaSelectService, PrismaService, User } from '../../prisma';
 import type {
@@ -35,7 +35,7 @@ export class UserResolver {
     @Inject(DEFAULT_FIELDS_TOKEN) private readonly defaultFields: DefaultFields,
     private readonly prisma: PrismaService,
     private readonly prismaSelect: PrismaSelectService,
-    private readonly auth: AuthService
+    private readonly caslFactory: CaslFactory,
   ) {}
 
   @ResolveField()
@@ -45,7 +45,7 @@ export class UserResolver {
 
   @ResolveField()
   async rules(@Parent() parent: User) {
-    const ability = await this.auth.createAbility(parent);
+    const ability = await this.caslFactory.createAbility(parent);
     return ability.rules;
   }
 

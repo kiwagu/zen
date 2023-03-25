@@ -7,10 +7,24 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '../config';
 import { JwtModule } from '../jwt';
 import { MailService } from './mail.service';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 
 @Module({
   imports: [
     JwtModule,
+    ClientsModule.register([
+      {
+        name: 'MAIL_SERVICE',
+        transport: Transport.RMQ,
+        options: {
+          urls: ['amqp://rabbitmq:5672'],
+          queue: 'notifications-queue',
+          queueOptions: {
+            durable: true,
+          },
+        },
+      },
+    ]),
     MailerModule.forRootAsync({
       useFactory: async (config: ConfigService) => ({
         ...config.mail,

@@ -45,7 +45,7 @@ interval(1000).subscribe(i =>
 export class SampleResolver implements OnModuleInit {
   UPLOAD_PATH = './upload/';
 
-  constructor(@Inject('GATEWAY_SERVICE') private client: ClientProxy) {}
+  constructor(@Inject('IAM_SERVICE') private client: ClientProxy) {}
 
   onModuleInit() {
     if (!existsSync(this.UPLOAD_PATH)) {

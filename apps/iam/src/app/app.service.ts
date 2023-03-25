@@ -56,6 +56,17 @@ export class AppService {
     };
   }
 
+  getUserByEmail(email: string, prisma: PrismaClient) {
+    return prisma.user.findFirst({
+      where: {
+        email: {
+          mode: 'insensitive',
+          equals: email,
+        },
+      },
+    });
+  }
+
   createAbility(user: RequestUser): Promise<AppAbility> {
     return this.caslFactory.createAbility(user);
   }

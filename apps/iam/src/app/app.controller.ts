@@ -1,21 +1,26 @@
-import { Controller } from '@nestjs/common';
-import { MessagePattern, RpcException } from '@nestjs/microservices';
+import { Controller, Inject, Logger } from '@nestjs/common';
+import { ClientProxy, MessagePattern, RpcException } from '@nestjs/microservices';
 import { ApiError, RpcError } from '@zen/common';
 import { JwtPayload, RequestUser } from '@zen/nest-auth';
 import { bcryptVerify } from 'hash-wasm';
 
 import { AppService } from './app.service';
+import { ConfigService } from './config';
 import { JwtService } from './jwt';
 import { AccountInfo } from './models/account-info';
 import { AuthExchangeTokenInput } from './models/auth-exchange-token-input';
 import { AuthLoginInput } from './models/auth-login-input';
 import { AuthPasswordChangeInput } from './models/auth-password-change-input';
 import { AuthPasswordResetConfirmationInput } from './models/auth-password-reset-confirmation-input';
-import { PrismaService } from './prisma';
+import { AuthPasswordResetRequestInput } from './models/auth-password-reset-request-input';
+import { AuthRegisterInput } from './models/auth-register-input';
+import { PrismaService, User } from './prisma';
 
 @Controller()
 export class AppController {
   constructor(
+    @Inject('MAIL_SERVICE') private clientMail: ClientProxy,
+    private readonly config: ConfigService,
     private readonly appService: AppService,
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService
@@ -161,6 +166,96 @@ export class AppController {
       where: { id: user.id },
       data: { password: hashedPassword },
     });
+
+    return this.appService.getAuthSession(user);
+  }
+
+  @MessagePattern({ cmd: 'authPasswordResetRequest' })
+  async authPasswordResetRequest(args: AuthPasswordResetRequestInput) {
+    const possibleUsers = await this.prisma.user.findMany({
+      where: {
+        OR: [
+          {
+            email: {
+              equals: args.emailOrUsername,
+              mode: 'insensitive',
+            },
+          },
+          {
+            username: {
+              equals: args.emailOrUsername,
+              mode: 'insensitive',
+            },
+          },
+        ],
+        AND: [{ username: { not: null } }],
+      },
+    });
+
+    if (possibleUsers.length === 0) {
+      throw new RpcException({
+        response: ApiError.AuthLogin.USER_NOT_FOUND,
+        status: 404,
+        message: 'User not found',
+        name: RpcException.name,
+      } as RpcError);
+    }
+
+    possibleUsers.forEach(user =>
+      this.clientMail.emit<never, Pick<User, 'id' | 'email'>>('authPasswordResetRequested', {
+        id: user.id,
+        email: user.email,
+      })
+    );
+
+    return true;
+  }
+
+  @MessagePattern({ cmd: 'authRegister' })
+  async authRegister(args: AuthRegisterInput) {
+    if (!this.config.publicRegistration) {
+      throw new RpcException({
+        response: ApiError.AuthRegister.NO_PUBLIC_REGISTRATIONS,
+        status: 400,
+        message: 'No public registrations allowed',
+        name: RpcException.name,
+      } as RpcError);
+    }
+
+    if (await this.appService.getUserByUsername(args.username, this.prisma)) {
+      throw new RpcException({
+        response: ApiError.AuthRegister.USERNAME_TAKEN,
+        status: 400,
+        message: 'Username taken',
+        name: RpcException.name,
+      } as RpcError);
+    }
+
+    if (await this.appService.getUserByEmail(args.email, this.prisma)) {
+      throw new RpcException({
+        response: ApiError.AuthRegister.EMAIL_TAKEN,
+        status: 400,
+        message: 'Email taken',
+        name: RpcException.name,
+      } as RpcError);
+    }
+
+    const hashedPassword = await this.appService.hashPassword(args.password);
+
+    const user = await this.prisma.user.create({
+      data: {
+        username: args.username,
+        email: args.email,
+        password: hashedPassword,
+      },
+    });
+
+    this.clientMail.emit<never, Pick<User, 'username' | 'email'>>('authPasswordResetRequested', {
+      username: user.username,
+      email: user.email,
+    });
+
+    Logger.log(`Registered new user: ${user.username}`);
 
     return this.appService.getAuthSession(user);
   }

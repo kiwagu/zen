@@ -1,18 +1,25 @@
 import { URLSearchParams } from 'url';
 
-import { Controller, Get, Res, UseFilters, UseGuards } from '@nestjs/common';
+import { Controller, Get, Inject, Res, UseFilters, UseGuards } from '@nestjs/common';
+import { ClientProxy } from '@nestjs/microservices';
 import { AuthGuard } from '@nestjs/passport';
-import { CurrentUser, RequestUser } from '@zen/nest-auth';
+
 import { Response } from 'express';
+import { firstValueFrom } from 'rxjs';
+
+import { CurrentUser, RequestUser } from '@zen/nest-auth';
 
 import { ConfigService } from '../config';
-import { AuthService } from './auth.service';
+import { AuthExchangeTokenInput, AuthSession } from '../graphql/models';
 import { EmailTakenExceptionFilter } from './strategies/email-taken-exception.filter';
 
 @Controller('auth')
 @UseFilters(EmailTakenExceptionFilter)
 export class AuthController {
-  constructor(private readonly auth: AuthService, private readonly config: ConfigService) {}
+  constructor(
+    @Inject('IAM_SERVICE') private client: ClientProxy,
+    private readonly config: ConfigService
+  ) {}
 
   @Get('google')
   @UseGuards(AuthGuard('google'))
@@ -28,7 +35,13 @@ export class AuthController {
   }
 
   async getLoginConfirmedURL(user: RequestUser) {
-    const authSession = await this.auth.getAuthSession(user, false);
+    const authSession = await firstValueFrom(
+      this.client.send<AuthSession, AuthExchangeTokenInput & { userId: string }>(
+        { cmd: 'authExchangeToken' },
+        { userId: user.id, rememberMe: false }
+      )
+    );
+
     const token = encodeURIComponent(authSession.token);
     const queryParams = new URLSearchParams({ token });
     return this.config.oauth?.loginConfirmedURL + '?' + queryParams;

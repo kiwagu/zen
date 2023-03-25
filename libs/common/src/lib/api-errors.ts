@@ -14,6 +14,7 @@ export enum AuthPasswordResetRequest {
 export enum AuthRegister {
   USERNAME_TAKEN = 'USERNAME_TAKEN',
   EMAIL_TAKEN = 'EMAIL_TAKEN',
+  NO_PUBLIC_REGISTRATIONS = 'NO_PUBLIC_REGISTRATIONS',
 }
 
 export enum AuthPasswordChange {

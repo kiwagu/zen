@@ -1,8 +1,9 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { Global, MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ThrottlerModule } from '@nestjs/throttler';
-import { GqlWithBodyParser, loggerInterceptor, LoggerModule } from '@zen/logger';
-
+import { GqlWithBodyParser, LoggerModule, loggerInterceptor } from '@zen/logger';
 import graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.js';
+
 import { environment } from '../environments/environment';
 import { ConfigModule, ConfigService } from './config';
 import { ToolsController } from './controllers';
@@ -11,10 +12,11 @@ import { JwtModule } from './jwt';
 import { MailModule } from './mail';
 import { PrismaModule } from './prisma';
 
+@Global()
 @Module({
   imports: [
     LoggerModule.forRoot({
-      serviceName: 'api',
+      serviceName: environment.serviceName,
       interceptor: { gql: GqlWithBodyParser },
     }),
     ThrottlerModule.forRootAsync({
@@ -25,11 +27,25 @@ import { PrismaModule } from './prisma';
     ConfigModule,
     ZenGraphQLModule,
     JwtModule,
+    ClientsModule.register([
+      {
+        name: 'IAM_SERVICE',
+        transport: Transport.RMQ,
+        options: {
+          urls: ['amqp://rabbitmq:5672'],
+          queue: 'iam-queue',
+          queueOptions: {
+            durable: true,
+          },
+        },
+      },
+    ]),
     MailModule,
     PrismaModule,
   ],
   controllers: [ToolsController],
   providers: [loggerInterceptor],
+  exports: [ClientsModule],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

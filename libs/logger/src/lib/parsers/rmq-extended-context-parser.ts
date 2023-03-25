@@ -13,15 +13,24 @@ export class RabbitMqWithBodyParser extends RabbitMqParser {
     context: ExecutionContext,
     startTime: number,
     options: OgmaInterceptorServiceOptions
-  ): LogObject & { message: Record<string, any>; traceId?: string; spanId?: string } {
+  ): LogObject & {
+    message: Record<string, any>;
+    responseType: string;
+    response?: unknown;
+    traceId?: string;
+    spanId?: string;
+  } {
     const span = otelApi.trace.getActiveSpan();
     const rmqContext = context.switchToRpc().getContext<RmqContext>();
     const { content } = rmqContext.getMessage();
     const message = JSON.parse(content.toString());
+    const succesContext = super.getSuccessContext(data, context, startTime, options);
 
     return {
-      ...super.getSuccessContext(data, context, startTime, options),
+      ...succesContext,
       message,
+      responseType: typeof data,
+      response: succesContext.contentLength < 128 ? data : undefined,
       traceId: span?.spanContext().traceId,
       spanId: span?.spanContext().spanId,
     };

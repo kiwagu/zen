@@ -1,9 +1,6 @@
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-grpc';
 import { registerInstrumentations } from '@opentelemetry/instrumentation';
 import { AmqplibInstrumentation } from '@opentelemetry/instrumentation-amqplib';
-import { ExpressInstrumentation } from '@opentelemetry/instrumentation-express';
-import { GraphQLInstrumentation } from '@opentelemetry/instrumentation-graphql';
-import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
 import { Resource } from '@opentelemetry/resources';
 import {
   BatchSpanProcessor,
@@ -38,9 +35,6 @@ if (environment.openTelemetry) {
   registerInstrumentations({
     tracerProvider: provider,
     instrumentations: [
-      new HttpInstrumentation(),
-      new ExpressInstrumentation(),
-      new GraphQLInstrumentation(),
       new PrismaInstrumentation(),
       new AmqplibInstrumentation(),
     ],

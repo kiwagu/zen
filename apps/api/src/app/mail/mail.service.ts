@@ -1,16 +1,18 @@
 import { ISendMailOptions, MailerService } from '@nestjs-modules/mailer';
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
+import { ClientProxy } from '@nestjs/microservices';
 
 import { ConfigService } from '../config';
 import { JwtService } from '../jwt';
 import { User } from '../prisma';
-import { GeneralContext, PasswordResetContext } from './contexts';
+import { GeneralContext } from './contexts';
 
 type MailOptions = ISendMailOptions & { template?: string };
 
 @Injectable()
 export class MailService {
   constructor(
+    @Inject('MAIL_SERVICE') private client: ClientProxy,
     private readonly mailer: MailerService,
     private readonly jwtService: JwtService,
     private readonly config: ConfigService
@@ -31,18 +33,9 @@ export class MailService {
   }
   //--------------------------------------------------------------------------
   sendPasswordReset(user: User) {
-    const token = this.jwtService.sign({ sub: user.id, aud: user.email }, { expiresIn: '1d' });
-
-    const context: PasswordResetContext = {
-      siteUrl: this.config.siteUrl,
-      resetUrl: `${this.config.siteUrl}/password-reset-confirmation?token=${encodeURI(token)}`,
-    };
-
-    return this.send({
-      template: 'password-reset',
-      to: user.email,
-      subject: `Password Reset Request`,
-      context,
-    }).then();
+    this.client.emit<never, Pick<User, 'id' | 'email'>>('authPasswordResetRequested', {
+      id: user.id,
+      email: user.email,
+    });
   }
 }
