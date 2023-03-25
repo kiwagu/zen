@@ -9,7 +9,6 @@ import { ConfigModule, ConfigService } from './config';
 import { ToolsController } from './controllers';
 import { ZenGraphQLModule } from './graphql';
 import { JwtModule } from './jwt';
-import { MailModule } from './mail';
 import { PrismaModule } from './prisma';
 
 @Global()
@@ -40,7 +39,6 @@ import { PrismaModule } from './prisma';
         },
       },
     ]),
-    MailModule,
     PrismaModule,
   ],
   controllers: [ToolsController],

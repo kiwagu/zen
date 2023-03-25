@@ -24,13 +24,13 @@ export class RabbitMqWithBodyParser extends RabbitMqParser {
     const rmqContext = context.switchToRpc().getContext<RmqContext>();
     const { content } = rmqContext.getMessage();
     const message = JSON.parse(content.toString());
-    const succesContext = super.getSuccessContext(data, context, startTime, options);
+    const successContext = super.getSuccessContext(data, context, startTime, options);
 
     return {
-      ...succesContext,
+      ...successContext,
       message,
       responseType: typeof data,
-      response: succesContext.contentLength < 128 ? data : undefined,
+      response: successContext.contentLength < 128 ? data : undefined,
       traceId: span?.spanContext().traceId,
       spanId: span?.spanContext().spanId,
     };
