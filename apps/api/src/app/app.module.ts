@@ -1,19 +1,34 @@
 import { Global, MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { ClientsModule, Transport } from '@nestjs/microservices';
+import { ClientsModule } from '@nestjs/microservices';
 import { ThrottlerModule } from '@nestjs/throttler';
-import { GqlWithBodyParser, LoggerModule, loggerInterceptor } from '@zen/logger';
+import { GqlWithBodyParser, loggerInterceptor, LoggerModule } from '@zen/logger';
+
+import { Request } from 'express';
 import graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.js';
+import { ClsModule } from 'nestjs-cls';
+
+import { PrismaModule } from '@zen/nest-api/prisma';
 
 import { environment } from '../environments/environment';
 import { ConfigModule, ConfigService } from './config';
 import { ToolsController } from './controllers';
 import { ZenGraphQLModule } from './graphql';
 import { JwtModule } from './jwt';
-import { PrismaModule } from './prisma';
+import { ClientRMQExt } from './libs/client-rmq-ext';
 
 @Global()
 @Module({
   imports: [
+    ClsModule.forRoot({
+      global: true,
+      middleware: {
+        mount: true,
+        setup: (cls, req: Request) => {
+          // Put the jwt token to every request to store
+          cls.set('token', req.header('Authorization'));
+        },
+      },
+    }),
     LoggerModule.forRoot({
       serviceName: environment.serviceName,
       interceptor: { gql: GqlWithBodyParser },
@@ -29,7 +44,7 @@ import { PrismaModule } from './prisma';
     ClientsModule.register([
       {
         name: 'IAM_SERVICE',
-        transport: Transport.RMQ,
+        customClass: ClientRMQExt,
         options: {
           urls: ['amqp://rabbitmq:5672'],
           queue: 'iam-queue',

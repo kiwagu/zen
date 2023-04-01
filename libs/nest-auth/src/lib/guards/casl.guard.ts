@@ -1,7 +1,13 @@
 import { ContextType, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
+import { JwtService } from '@nestjs/jwt';
+import { RpcException } from '@nestjs/microservices';
 import { AuthGuard } from '@nestjs/passport';
+
+import { ClsService } from 'nestjs-cls';
+
+import { ApiError, RpcError } from '@zen/common';
 
 import { CaslFactory } from '../casl-factory';
 import { ALLOW_ANONYMOUS_KEY } from '../decorators/allow-anonymous.decorator';
@@ -27,7 +33,12 @@ import { CASL_POLICY_KEY, CaslPolicyHandler } from '../decorators/casl-policy.de
  */
 @Injectable()
 export class CaslGuard extends AuthGuard('jwt') {
-  constructor(private readonly reflector: Reflector, private readonly caslFactory: CaslFactory) {
+  constructor(
+    private readonly reflector: Reflector,
+    private readonly caslFactory: CaslFactory,
+    readonly jwtService: JwtService,
+    readonly clsService: ClsService
+  ) {
     super();
   }
 
@@ -45,12 +56,32 @@ export class CaslGuard extends AuthGuard('jwt') {
     if (allowAnonymousClass) return true;
 
     let req: any;
-    const type = context.getType() as ContextType | 'graphql';
+    const type = context.getType() as ContextType | 'graphql' | 'rpc';
 
     if (type === 'http') {
       req = context.switchToHttp().getRequest();
     } else if (type === 'graphql') {
       req = GqlExecutionContext.create(context).getContext().req;
+    } else if (type === 'rpc') {
+      try {
+        await super.canActivate(context);
+      } catch (error) {
+        try {
+          await super.canActivate(context);
+        } catch (error) {
+          if (error instanceof UnauthorizedException) {
+            throw new RpcException({
+              response: ApiError.AuthCommon.UNAUTHORIZED,
+              status: 400,
+              message: 'Unauthorized',
+              name: RpcException.name,
+            } as RpcError);
+          }
+
+          throw error;
+        }
+      }
+      req = this.getRequest(context);
     } else {
       throw new UnauthorizedException(`Context ${type} not supported`);
     }
@@ -69,11 +100,14 @@ export class CaslGuard extends AuthGuard('jwt') {
   }
 
   getRequest(context: ExecutionContext) {
-    const type = context.getType() as ContextType | 'graphql';
+    const type = context.getType() as ContextType | 'graphql' | 'rpc';
+
     if (type === 'http') {
       return context.switchToHttp().getRequest();
     } else if (type === 'graphql') {
       return GqlExecutionContext.create(context).getContext().req;
+    } else if (type === 'rpc') {
+      return this.clsService.get('rpcReq');
     } else {
       throw new UnauthorizedException(`Context ${type} not supported`);
     }

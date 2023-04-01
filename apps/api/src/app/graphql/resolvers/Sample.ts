@@ -17,10 +17,6 @@ export const typeDefs = gql`
     sampleUploadMany(files: [Upload!]!): [String!]!
   }
 
-  extend type Query {
-    hi: String!
-  }
-
   type SampleSubscriptionResult {
     message: String!
   }
@@ -68,16 +64,6 @@ export class SampleResolver implements OnModuleInit {
   async sampleSubscription(@CurrentUser() user: RequestUser) {
     Logger.log(`sampleSubscription subscribed to by user with id ${user.id}`);
     return pubSub.asyncIterator('sampleSubscription');
-  }
-
-  @Query()
-  hi() {
-    return this.client.send({ cmd: 'hi' }, {}).pipe(
-      timeout({
-        each: 5000,
-        with: () => throwError(() => new Error('Too long')),
-      })
-    );
   }
 
   async saveFiles(files: Promise<Upload>[]) {

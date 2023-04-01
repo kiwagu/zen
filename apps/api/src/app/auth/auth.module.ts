@@ -3,7 +3,7 @@ import { NestAuthModule } from '@zen/nest-auth';
 
 import { environment } from '../../environments/environment';
 import { JwtModule } from '../jwt';
-import { PrismaModule } from '../prisma';
+import { PrismaModule } from '@zen/nest-api/prisma';
 import { AuthController } from './auth.controller';
 import { AppCaslFactory } from './casl/casl.factory';
 import { defaultFieldsProvider } from './casl/default-fields';

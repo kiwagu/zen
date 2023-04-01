@@ -1,4 +1,4 @@
-import { User } from '../../prisma';
+import { User } from '@zen/nest-api/prisma';
 
 export interface AuthSession {
   userId: User['id'];

@@ -3,17 +3,18 @@ import { ZenGenerator } from './zen-generator';
 async function main() {
   const generator = new ZenGenerator({
     palConfig: {
-      schema: 'apps/api/prisma/schema.prisma',
+      schema: 'libs/nest-api/prisma/schema.prisma',
       backend: {
         generator: 'sdl',
-        output: 'apps/api/src/app/graphql/paljs',
+        output: 'libs/nest-api/src/lib/graphql/paljs',
         /** @see [Pal.js GraphQL SDL Inputs Docs](https://paljs.com/plugins/sdl-inputs) */
         doNotUseFieldUpdateOperationsInput: true,
       },
     },
-    apiOutPath: 'apps/api/src/app/graphql',
-    caslSubjectsOutFile: 'apps/api/src/app/auth/casl/generated.ts',
-    defaultFieldsOutFile: 'apps/api/src/app/prisma/default-fields.ts',
+    apiOutPath: 'libs/nest-api/src/lib/graphql',
+    apiOutPathResolvers: 'apps/api/src/app/graphql',
+    caslSubjectsOutFile: 'libs/nest-api/src/lib/auth/casl/generated.ts',
+    defaultFieldsOutFile: 'libs/nest-api/src/lib/prisma/default-fields.ts',
     frontend: {
       outPath: 'libs/graphql/src/lib',
     },

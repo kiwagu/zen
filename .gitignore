@@ -2,6 +2,7 @@
 
 /.env
 /apps/**/prisma/generated/
+/libs/**/prisma/generated/
 
 # documentation
 /doc-*

@@ -23,6 +23,7 @@ const execAsync = promisify(exec);
 export type ZenGeneratorConfig = {
   palConfig: PalConfig;
   apiOutPath: string;
+  apiOutPathResolvers: string;
   caslSubjectsOutFile?: string;
   defaultFieldsOutFile?: string;
   frontend?: {
@@ -82,7 +83,7 @@ export class ZenGenerator {
     console.log(`- Wrote: ${palTypeDefsFilePath}`);
 
     console.log(`---------------- Nest GraphQL resolvers generated ----------------`);
-    const nestResolversPath = path.join(this.config.apiOutPath, 'resolvers');
+    const nestResolversPath = path.join(this.config.apiOutPathResolvers, 'resolvers');
 
     if (!fs.existsSync(nestResolversPath)) {
       await mkdir(nestResolversPath);
@@ -170,7 +171,7 @@ export class ZenGenerator {
   async nestAbacResolvers(prismaNames: string[]) {
     let wroteCount = 0;
     for (const prismaName of prismaNames) {
-      const outPath = path.join(this.config.apiOutPath, 'resolvers', `${prismaName}.ts`);
+      const outPath = path.join(this.config.apiOutPathResolvers, 'resolvers', `${prismaName}.ts`);
 
       if (!fs.existsSync(outPath)) {
         await writeFile(outPath, GraphQLResolversTemplate(prismaName));

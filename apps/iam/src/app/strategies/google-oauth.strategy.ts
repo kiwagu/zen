@@ -3,8 +3,9 @@ import { PassportStrategy } from '@nestjs/passport';
 import { RequestUser } from '@zen/nest-auth';
 import { Profile, Strategy } from 'passport-google-oauth20';
 
+import { PrismaService } from '@zen/nest-api/prisma';
+
 import { ConfigService } from '../config';
-import { PrismaService } from '../prisma';
 import { EmailTakenException } from './email-taken-exception.filter';
 
 @Injectable()

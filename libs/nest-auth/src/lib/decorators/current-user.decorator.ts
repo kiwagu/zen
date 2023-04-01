@@ -6,6 +6,8 @@ import {
 } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
 
+import { ClsServiceManager } from 'nestjs-cls';
+
 import { RequestUser } from '../models/request-user';
 
 /**
@@ -25,6 +27,8 @@ export const CurrentUser = createParamDecorator((data: unknown, context: Executi
     user = context.switchToHttp().getRequest().user;
   } else if (type === 'graphql') {
     user = GqlExecutionContext.create(context).getContext().req.user;
+  } else if (type === 'rpc') {
+    user = ClsServiceManager.getClsService().get('rpcReq')?.user;
   } else {
     throw new UnauthorizedException(`Context ${type} not supported`);
   }

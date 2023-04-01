@@ -1,6 +1,6 @@
 import { Provider } from '@nestjs/common';
 
-import { DefaultFields } from '../../prisma';
+import { DefaultFields } from '@zen/nest-api/prisma';
 
 /**
  * Default fields to include for Prisma queries to ensure that they exist during authorization.

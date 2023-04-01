@@ -1,8 +1,11 @@
-import { Controller, Inject, Logger } from '@nestjs/common';
-import { ClientProxy, MessagePattern, RpcException } from '@nestjs/microservices';
-import { ApiError, RpcError } from '@zen/common';
-import { JwtPayload, RequestUser } from '@zen/nest-auth';
+import { Controller, Inject, Logger, UseGuards } from '@nestjs/common';
+import { ClientProxy, MessagePattern, Payload, RpcException } from '@nestjs/microservices';
+
 import { bcryptVerify } from 'hash-wasm';
+
+import { CurrentUser, JwtPayload, RequestUser, RolesGuard } from '@zen/nest-auth';
+import { ApiError, RpcError } from '@zen/common';
+import { PrismaService, User } from '@zen/nest-api/prisma';
 
 import { AppService } from './app.service';
 import { ConfigService } from './config';
@@ -14,7 +17,6 @@ import { AuthPasswordChangeInput } from './models/auth-password-change-input';
 import { AuthPasswordResetConfirmationInput } from './models/auth-password-reset-confirmation-input';
 import { AuthPasswordResetRequestInput } from './models/auth-password-reset-request-input';
 import { AuthRegisterInput } from './models/auth-register-input';
-import { PrismaService, User } from './prisma';
 
 @Controller()
 export class AppController {
@@ -27,8 +29,8 @@ export class AppController {
   ) {}
 
   @MessagePattern({ cmd: 'authLogin' })
-  async authLogin(args: AuthLoginInput) {
-    const user = await this.appService.getUserByUsername(args.username, this.prisma);
+  async authLogin(payload: AuthLoginInput) {
+    const user = await this.appService.getUserByUsername(payload.username, this.prisma);
 
     if (!user) {
       throw new RpcException({
@@ -41,7 +43,7 @@ export class AppController {
 
     // TODO: Too slow! Takes about 500 msec :O
     const correctPassword = await bcryptVerify({
-      password: args.password,
+      password: payload.password,
       hash: user.password as string,
     });
 
@@ -54,13 +56,14 @@ export class AppController {
       } as RpcError);
     }
 
-    return this.appService.getAuthSession(user, args.rememberMe);
+    return this.appService.getAuthSession(user, payload.rememberMe);
   }
 
   @MessagePattern({ cmd: 'accountInfo' })
-  async accountInfo(args: RequestUser) {
+  @UseGuards(RolesGuard('Super'))
+  async accountInfo(@CurrentUser() currentUser: RequestUser) {
     const user = await this.prisma.user.findUnique({
-      where: { id: args.id },
+      where: { id: currentUser.id },
     });
 
     if (!user) {
@@ -80,9 +83,13 @@ export class AppController {
   }
 
   @MessagePattern({ cmd: 'authExchangeToken' })
-  async authExchangeToken(args: AuthExchangeTokenInput) {
+  @UseGuards(RolesGuard())
+  async authExchangeToken(
+    @Payload() payload: AuthExchangeTokenInput,
+    @CurrentUser() { id }: RequestUser
+  ) {
     const user = await this.prisma.user.findUnique({
-      where: { id: args.userId },
+      where: { id },
     });
 
     if (!user) {
@@ -94,12 +101,16 @@ export class AppController {
       } as RpcError);
     }
 
-    return this.appService.getAuthSession(user, args.rememberMe);
+    return this.appService.getAuthSession(user, payload.rememberMe);
   }
 
   @MessagePattern({ cmd: 'authPasswordChange' })
-  async authPasswordChange(args: AuthPasswordChangeInput) {
-    const user = await this.prisma.user.findUnique({ where: { id: args.userId } });
+  @UseGuards(RolesGuard())
+  async authPasswordChange(
+    @Payload() payload: AuthPasswordChangeInput,
+    @CurrentUser() { id }: RequestUser
+  ) {
+    const user = await this.prisma.user.findUnique({ where: { id } });
 
     if (!user) {
       throw new RpcException({
@@ -111,7 +122,7 @@ export class AppController {
     }
 
     const correctPassword = await bcryptVerify({
-      password: args.oldPassword,
+      password: payload.oldPassword,
       hash: user.password as string,
     });
 
@@ -124,7 +135,7 @@ export class AppController {
       } as RpcError);
     }
 
-    const hashedPassword = await this.appService.hashPassword(args.newPassword);
+    const hashedPassword = await this.appService.hashPassword(payload.newPassword);
 
     await this.prisma.user.update({
       where: { id: user.id },
@@ -135,11 +146,11 @@ export class AppController {
   }
 
   @MessagePattern({ cmd: 'authPasswordResetConfirmation' })
-  async authPasswordResetConfirmation(args: AuthPasswordResetConfirmationInput) {
+  async authPasswordResetConfirmation(payload: AuthPasswordResetConfirmationInput) {
     let tokenPayload: JwtPayload;
 
     try {
-      tokenPayload = this.jwtService.verify(args.token);
+      tokenPayload = this.jwtService.verify(payload.token);
     } catch {
       throw new RpcException({
         response: ApiError.AuthPasswordChange.JWT_FAILED_VERIFICATION,
@@ -160,7 +171,7 @@ export class AppController {
       } as RpcError);
     }
 
-    const hashedPassword = await this.appService.hashPassword(args.newPassword);
+    const hashedPassword = await this.appService.hashPassword(payload.newPassword);
 
     user = await this.prisma.user.update({
       where: { id: user.id },
@@ -171,19 +182,19 @@ export class AppController {
   }
 
   @MessagePattern({ cmd: 'authPasswordResetRequest' })
-  async authPasswordResetRequest(args: AuthPasswordResetRequestInput) {
+  async authPasswordResetRequest(payload: AuthPasswordResetRequestInput) {
     const possibleUsers = await this.prisma.user.findMany({
       where: {
         OR: [
           {
             email: {
-              equals: args.emailOrUsername,
+              equals: payload.emailOrUsername,
               mode: 'insensitive',
             },
           },
           {
             username: {
-              equals: args.emailOrUsername,
+              equals: payload.emailOrUsername,
               mode: 'insensitive',
             },
           },
@@ -212,7 +223,7 @@ export class AppController {
   }
 
   @MessagePattern({ cmd: 'authRegister' })
-  async authRegister(args: AuthRegisterInput) {
+  async authRegister(payload: AuthRegisterInput) {
     if (!this.config.publicRegistration) {
       throw new RpcException({
         response: ApiError.AuthRegister.NO_PUBLIC_REGISTRATIONS,
@@ -222,7 +233,7 @@ export class AppController {
       } as RpcError);
     }
 
-    if (await this.appService.getUserByUsername(args.username, this.prisma)) {
+    if (await this.appService.getUserByUsername(payload.username, this.prisma)) {
       throw new RpcException({
         response: ApiError.AuthRegister.USERNAME_TAKEN,
         status: 400,
@@ -231,7 +242,7 @@ export class AppController {
       } as RpcError);
     }
 
-    if (await this.appService.getUserByEmail(args.email, this.prisma)) {
+    if (await this.appService.getUserByEmail(payload.email, this.prisma)) {
       throw new RpcException({
         response: ApiError.AuthRegister.EMAIL_TAKEN,
         status: 400,
@@ -240,12 +251,12 @@ export class AppController {
       } as RpcError);
     }
 
-    const hashedPassword = await this.appService.hashPassword(args.password);
+    const hashedPassword = await this.appService.hashPassword(payload.password);
 
     const user = await this.prisma.user.create({
       data: {
-        username: args.username,
-        email: args.email,
+        username: payload.username,
+        email: payload.email,
         password: hashedPassword,
       },
     });

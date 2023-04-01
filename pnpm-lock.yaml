@@ -127,6 +127,7 @@ specifiers:
   jest-preset-angular: 13.0.0
   localstorage-slim: ^2.4.0
   material-design-icons: ^3.0.1
+  nestjs-cls: ^3.3.1
   nodemailer: ^6.9.1
   nx: 15.8.7
   passport: ^0.6.0
@@ -195,6 +196,7 @@ dependencies:
   handlebars: 4.7.7
   hash-wasm: 4.9.0
   helmet: 6.0.1
+  nestjs-cls: 3.3.1_7ftkheainf6elxr73aabueoaxm
   nodemailer: 6.9.1
   passport: 0.6.0
   passport-google-oauth20: 2.0.0
@@ -21139,6 +21141,17 @@ packages:
   /nested-error-stacks/2.1.1:
     resolution: {integrity: sha512-9iN1ka/9zmX1ZvLV9ewJYEk9h7RyRRtqdK0woXcqohu8EWIerfPUjYJPg0ULy0UqP7cslmdGc8xKDJcojlKiaw==}
     dev: true
+
+  /nestjs-cls/3.3.1_7ftkheainf6elxr73aabueoaxm:
+    resolution: {integrity: sha512-8YyXFAtVVEXSrRpXJfOSGYMTSD6WBbNylowneAjwkUFZaw5ff2Q0VyMUcUKZYux6hTO8NFrGlc2AAm0l2WvPXA==}
+    engines: {node: '>=12.17.0'}
+    peerDependencies:
+      '@nestjs/common': '> 7.0.0 < 10'
+      '@nestjs/core': '> 7.0.0 < 10'
+    dependencies:
+      '@nestjs/common': 9.3.10_welcnyot5bzd5wa2aovbkxpi4i
+      '@nestjs/core': 9.3.10_4gjjoux2xutebtdeqc6r5vd64e
+    dev: false
 
   /netmask/2.0.2:
     resolution: {integrity: sha512-dBpDMdxv9Irdq66304OLfEmQ9tbNRFnFTuZiLo+bD+r332bBmMJ8GBLXklIXXgxd3+v9+KUnZaUR5PJMa75Gsg==}

@@ -1,9 +1,9 @@
 import { AbilityBuilder, PureAbility } from '@casl/ability';
+
 import { Action, Role } from '@zen/common';
 import { CaslFactory, RequestUser } from '@zen/nest-auth';
-
-import { PrismaQuery, createPrismaAbility } from './casl-prisma';
-import { PrismaSubjects } from './generated';
+import { PrismaSubjects } from '@zen/nest-api/auth/casl/generated';
+import { PrismaQuery, createPrismaAbility } from '@zen/nest-api/auth/casl/casl-prisma';
 
 /** A union of subjects to extend the ability beyond just Prisma models */
 type ExtendedSubjects = 'all';

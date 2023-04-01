@@ -1,14 +1,12 @@
-import { subject } from '@casl/ability';
 import { ForbiddenException, Inject, UseGuards } from '@nestjs/common';
 import { Args, Info, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
-import type { NonNullableFields } from '@zen/common';
-import { CaslAbility, CaslFactory, CaslGuard } from '@zen/nest-auth';
+import { ClientProxy } from '@nestjs/microservices';
+
+import { subject } from '@casl/ability';
 import { GraphQLResolveInfo } from 'graphql';
 import { gql } from 'graphql-tag';
 
-import { DEFAULT_FIELDS_TOKEN } from '../../auth';
-import type { AppAbility } from '../../auth';
-import { DefaultFields, PrismaSelectService, PrismaService, User } from '../../prisma';
+import type { NonNullableFields } from '@zen/common';
 import type {
   AggregateUserArgs,
   CreateOneUserArgs,
@@ -20,7 +18,12 @@ import type {
   UpdateManyUserArgs,
   UpdateOneUserArgs,
   UpsertOneUserArgs,
-} from '../resolversTypes';
+} from '@zen/nest-api/graphql/resolversTypes';
+import { DefaultFields, PrismaSelectService, PrismaService, User } from '@zen/nest-api/prisma';
+import { CaslAbility, CaslFactory, CaslGuard } from '@zen/nest-auth';
+
+import { DEFAULT_FIELDS_TOKEN } from '../../auth';
+import type { AppAbility } from '../../auth';
 
 export const typeDefs = gql`
   extend type User {
@@ -36,6 +39,7 @@ export class UserResolver {
     private readonly prisma: PrismaService,
     private readonly prismaSelect: PrismaSelectService,
     private readonly caslFactory: CaslFactory,
+    @Inject('IAM_SERVICE') private client: ClientProxy
   ) {}
 
   @ResolveField()
@@ -63,16 +67,16 @@ export class UserResolver {
   }
 
   @Query()
-  async findFirstUser(
+  findFirstUser(
     @Args() args: NonNullableFields<FindFirstUserArgs>,
-    @Info() info: GraphQLResolveInfo,
-    @CaslAbility() ability: AppAbility
+    @Info() info: GraphQLResolveInfo
   ) {
-    const record = await this.prisma.user.findFirst(
-      this.prismaSelect.getArgs(info, args, this.defaultFields)
+    const gqlArgs = this.prismaSelect.getArgs(info, args, this.defaultFields);
+
+    return this.client.send<User, NonNullableFields<FindFirstUserArgs>>(
+      { cmd: 'findFirstUser' },
+      gqlArgs
     );
-    if (ability.cannot('read', subject('User', record as User))) throw new ForbiddenException();
-    return record;
   }
 
   @Query()

@@ -4,10 +4,11 @@ import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import helmet from 'helmet';
 
-import { AppModule } from './app/app.module';
-import { PrismaService } from './app/prisma';
-import { environment } from './environments/environment';
 import { LoggerService } from '@zen/logger';
+import { PrismaService } from '@zen/nest-api/prisma';
+
+import { AppModule } from './app/app.module';
+import { environment } from './environments/environment';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { cors: environment.cors, bufferLogs: true });

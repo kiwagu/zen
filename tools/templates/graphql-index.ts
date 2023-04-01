@@ -3,8 +3,9 @@ export function GraphQLIndexTemplate(names: string[]) {
 import { mergeTypeDefs } from '@graphql-tools/merge';
 import { DocumentNode } from 'graphql';
 
-import { typeDefs as GlobalTypeDefs } from '../global-schema.gql';
-import PALJS_TYPE_DEFS from '../paljs/typeDefs';\n`;
+import PALJS_TYPE_DEFS from '@zen/nest-api/graphql/paljs/typeDefs';
+
+import { typeDefs as GlobalTypeDefs } from '../global-schema.gql';\n`;
 
   // Construct the "resolvers" directory's "index.ts"
   indexSource += names

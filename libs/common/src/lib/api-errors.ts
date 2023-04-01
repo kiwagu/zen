@@ -2,6 +2,10 @@ export enum Nest {
   THROTTLE = 'ThrottlerException: Too Many Requests',
 }
 
+export enum AuthCommon {
+  UNAUTHORIZED = 'UNAUTHORIZED',
+}
+
 export enum AuthLogin {
   USER_NOT_FOUND = 'USER_NOT_FOUND',
   INCORRECT_PASSWORD = 'INCORRECT_PASSWORD',

@@ -2,7 +2,6 @@ import { Inject, UseGuards } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { ClientProxy } from '@nestjs/microservices';
 import { Throttle } from '@nestjs/throttler';
-import { CurrentUser, RequestUser, RolesGuard } from '@zen/nest-auth';
 import gql from 'graphql-tag';
 
 import { AuthSession } from '../../graphql/models/auth-session';
@@ -90,9 +89,7 @@ export const typeDefs = gql`
 @UseGuards(GqlThrottlerGuard)
 @Throttle()
 export class AuthResolver {
-  constructor(
-    @Inject('IAM_SERVICE') private client: ClientProxy
-  ) {}
+  constructor(@Inject('IAM_SERVICE') private client: ClientProxy) {}
 
   @Query()
   authLogin(@Args('data') args: AuthLoginInput) {
@@ -100,20 +97,15 @@ export class AuthResolver {
   }
 
   @Query()
-  @UseGuards(RolesGuard())
-  accountInfo(@CurrentUser() args: RequestUser) {
-    return this.client.send<AccountInfo, RequestUser>({ cmd: 'accountInfo' }, args);
+  accountInfo() {
+    return this.client.send<AccountInfo>({ cmd: 'accountInfo' }, {});
   }
 
   @Query()
-  @UseGuards(RolesGuard())
-  async authExchangeToken(
-    @CurrentUser() reqUser: RequestUser,
-    @Args('data') args: AuthExchangeTokenInput
-  ) {
-    return this.client.send<AccountInfo, AuthExchangeTokenInput & { userId: string }>(
+  async authExchangeToken(@Args('data') args: AuthExchangeTokenInput) {
+    return this.client.send<AccountInfo, AuthExchangeTokenInput>(
       { cmd: 'authExchangeToken' },
-      { ...args, userId: reqUser.id }
+      args
     );
   }
 
@@ -139,14 +131,7 @@ export class AuthResolver {
   }
 
   @Mutation()
-  @UseGuards(RolesGuard())
-  authPasswordChange(
-    @Args('data') args: AuthPasswordChangeInput,
-    @CurrentUser() reqUser: RequestUser
-  ) {
-    return this.client.send<true, AuthPasswordChangeInput & { userId: string }>(
-      { cmd: 'authPasswordChange' },
-      { ...args, userId: reqUser.id }
-    );
+  authPasswordChange(@Args('data') args: AuthPasswordChangeInput) {
+    return this.client.send<true, AuthPasswordChangeInput>({ cmd: 'authPasswordChange' }, args);
   }
 }

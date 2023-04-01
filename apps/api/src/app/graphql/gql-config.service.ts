@@ -1,16 +1,18 @@
+import { ApolloDriverConfig } from '@nestjs/apollo';
+import { Injectable } from '@nestjs/common';
+import { GqlOptionsFactory } from '@nestjs/graphql';
+
 import { ApolloServerPlugin } from '@apollo/server';
 import {
   ApolloServerPluginLandingPageLocalDefault,
   ApolloServerPluginLandingPageProductionDefault,
 } from '@apollo/server/plugin/landingPage/default';
-import { ApolloDriverConfig } from '@nestjs/apollo';
-import { Injectable } from '@nestjs/common';
-import { GqlOptionsFactory } from '@nestjs/graphql';
 import { print } from 'graphql';
 import GraphQLUpload from 'graphql-upload/GraphQLUpload.js';
 
+import { PrismaService } from '@zen/nest-api/prisma';
+
 import { ConfigService } from '../config';
-import { PrismaService } from '../prisma';
 import { IContext } from './models';
 import { ALL_TYPE_DEFS } from './resolvers';
 

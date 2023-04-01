@@ -4,12 +4,12 @@ import crypto from 'crypto';
 import { bcrypt } from 'hash-wasm';
 
 import { CaslFactory, JwtPayload, RequestUser } from '@zen/nest-auth';
+import { PrismaClient } from '@zen/nest-api/prisma';
 
 import { AppAbility } from './casl/casl.factory';
 import { ConfigService } from './config';
 import { JwtService } from './jwt';
 import { AuthSession } from './models/auth-session';
-import { PrismaClient } from './prisma';
 
 @Injectable()
 export class AppService {

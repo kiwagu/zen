@@ -5,7 +5,7 @@ import { GraphQLModule } from '@nestjs/graphql';
 
 import { ZenAuthModule } from '../auth';
 import { ConfigModule } from '../config';
-import { PrismaModule } from '../prisma';
+import { PrismaModule } from '@zen/nest-api/prisma';
 import { RpcExceptionFilter } from './filters/rpc-exceptions.filter';
 import { GqlConfigService } from './gql-config.service';
 import { NEST_RESOLVERS } from './resolvers';

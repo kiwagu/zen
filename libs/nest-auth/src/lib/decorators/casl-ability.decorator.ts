@@ -6,6 +6,8 @@ import {
 } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
 
+import { ClsServiceManager } from 'nestjs-cls';
+
 /**
  * Parameter decorator to provide the `CaslAbility` for the current user.
  * Works with either HTTP or GraphQL requests.
@@ -16,12 +18,14 @@ import { GqlExecutionContext } from '@nestjs/graphql';
  */
 export const CaslAbility = createParamDecorator((data: unknown, context: ExecutionContext) => {
   let ability;
-  const type = context.getType() as ContextType | 'graphql';
+  const type = context.getType() as ContextType | 'graphql' | 'rpc';
 
   if (type === 'http') {
     ability = context.switchToHttp().getRequest().ability;
   } else if (type === 'graphql') {
     ability = GqlExecutionContext.create(context).getContext().req.ability;
+  } else if (type === 'rpc') {
+    ability = ClsServiceManager.getClsService().get('rpcReq')?.ability;
   } else {
     throw new UnauthorizedException(`Context ${type} not supported`);
   }

@@ -1,21 +1,32 @@
-import { Module } from '@nestjs/common';
+import { Global, Module, Provider } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 
 import { LoggerModule, RabbitMqWithBodyParser, loggerInterceptor } from '@zen/logger';
 import { NestAuthModule } from '@zen/nest-auth';
+import { PrismaModule } from '@zen/nest-api/prisma';
 
 import { environment } from '../environments/environment';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AppCaslFactory } from './casl/casl.factory';
+import { defaultFieldsProvider } from './casl/default-fields';
 import { ConfigModule } from './config';
 import { JwtModule } from './jwt';
-import { PrismaModule } from './prisma';
+import { UserModule } from './modules/user/user.module';
+import { GoogleOAuthStrategy } from './strategies/google-oauth.strategy';
+import { JwtStrategy } from './strategies/jwt.strategy';
 
+const oauthProviders: Provider[] = [];
+if (environment.oauth?.google?.clientID) oauthProviders.push(GoogleOAuthStrategy);
+
+@Global()
 @Module({
   imports: [
     ConfigModule,
-    LoggerModule.forRoot({ serviceName: environment.serviceName, interceptor: { rpc: RabbitMqWithBodyParser } }),
+    LoggerModule.forRoot({
+      serviceName: environment.serviceName,
+      interceptor: { rpc: RabbitMqWithBodyParser },
+    }),
     PrismaModule,
     NestAuthModule.register(AppCaslFactory),
     JwtModule,
@@ -32,8 +43,10 @@ import { PrismaModule } from './prisma';
         },
       },
     ]),
+    UserModule,
   ],
+  exports: [JwtModule, NestAuthModule, defaultFieldsProvider],
   controllers: [AppController],
-  providers: [AppService, loggerInterceptor],
+  providers: [JwtStrategy, AppService, loggerInterceptor, defaultFieldsProvider, ...oauthProviders],
 })
 export class AppModule {}

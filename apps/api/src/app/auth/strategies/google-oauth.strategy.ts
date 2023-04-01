@@ -4,7 +4,7 @@ import { RequestUser } from '@zen/nest-auth';
 import { Profile, Strategy } from 'passport-google-oauth20';
 
 import { ConfigService } from '../../config';
-import { PrismaService } from '../../prisma';
+import { PrismaService } from '@zen/nest-api/prisma';
 import { EmailTakenException } from './email-taken-exception.filter';
 
 @Injectable()

@@ -67,7 +67,7 @@ Default fields must be defined explicitly to be included during Prisma queries t
 
 `apps/api/src/app/auth/casl/default-fields.ts`
 ```ts
-import { DefaultFields } from '../../prisma';
+import { DefaultFields } from '@zen/nest-api/prisma';
 
 const defaultFields: DefaultFields = {
   User: { id: true, roles: true },
