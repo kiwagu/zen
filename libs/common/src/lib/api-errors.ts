@@ -4,6 +4,7 @@ export enum Nest {
 
 export enum AuthCommon {
   UNAUTHORIZED = 'UNAUTHORIZED',
+  FORBIDDEN = 'FORBIDDEN',
 }
 
 export enum AuthLogin {
