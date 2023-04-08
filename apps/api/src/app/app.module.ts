@@ -1,19 +1,18 @@
-import { Global, MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { ClientsModule } from '@nestjs/microservices';
-import { ThrottlerModule } from '@nestjs/throttler';
-import { GqlWithBodyParser, loggerInterceptor, LoggerModule } from '@zen/logger';
-
 import { Request } from 'express';
 import graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.js';
 import { ClsModule } from 'nestjs-cls';
 
+import { Global, MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { ClientsModule } from '@nestjs/microservices';
+import { ThrottlerModule } from '@nestjs/throttler';
+
+import { GqlWithBodyParser, loggerInterceptor, LoggerModule } from '@zen/logger';
 import { PrismaModule } from '@zen/nest-api/prisma';
 
 import { environment } from '../environments/environment';
 import { ConfigModule, ConfigService } from './config';
 import { ToolsController } from './controllers';
 import { ZenGraphQLModule } from './graphql';
-import { JwtModule } from './jwt';
 import { ClientRMQExt } from './libs/client-rmq-ext';
 
 @Global()
@@ -40,7 +39,6 @@ import { ClientRMQExt } from './libs/client-rmq-ext';
     }),
     ConfigModule,
     ZenGraphQLModule,
-    JwtModule,
     ClientsModule.register([
       {
         name: 'IAM_SERVICE',

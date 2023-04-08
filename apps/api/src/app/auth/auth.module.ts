@@ -4,7 +4,6 @@ import { PrismaModule } from '@zen/nest-api/prisma';
 
 import { environment } from '../../environments/environment';
 import { defaultFieldsProvider } from '../graphql/default-fields';
-import { JwtModule } from '../jwt';
 import { AuthController } from './auth.controller';
 import { GoogleOAuthStrategy } from './strategies/google-oauth.strategy';
 
@@ -12,9 +11,9 @@ const oauthProviders: Provider[] = [];
 if (environment.oauth?.google?.clientID) oauthProviders.push(GoogleOAuthStrategy);
 
 @Module({
-  imports: [JwtModule, PrismaModule],
+  imports: [PrismaModule],
   providers: [defaultFieldsProvider, ...oauthProviders],
-  exports: [JwtModule, defaultFieldsProvider],
+  exports: [defaultFieldsProvider],
   controllers: [AuthController],
 })
 export class ZenAuthModule {}

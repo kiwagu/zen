@@ -2,7 +2,6 @@ import { ExecutionContext, Injectable, UnauthorizedException, mixin } from '@nes
 import { ContextType } from '@nestjs/common/interfaces';
 import { Reflector } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
-import { JwtService } from '@nestjs/jwt';
 import { RpcException } from '@nestjs/microservices';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiError, Role, RpcError } from '@zen/common';
@@ -36,7 +35,6 @@ export function RolesGuard(...roles: Array<Role>) {
   class MixinRolesGuard extends AuthGuard('jwt') {
     constructor(
       readonly reflector: Reflector,
-      readonly jwtService: JwtService,
       readonly clsService: ClsService
     ) {
       super();

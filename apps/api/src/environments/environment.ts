@@ -21,17 +21,6 @@ export const environment: EnvironmentBase = {
       maxFiles: 5,
     },
   },
-  jwtOptions: {
-    secret: process.env.JWT_PRIVATE_KEY,
-    signOptions: {
-      algorithm: 'HS256',
-      /**
-       * The client will exchange the token every 30 minutes during active sessions
-       * @see `libs\common\src\lib\environment` for `EnvironmentDev.jwtExchangeInterval`
-       */
-      expiresIn: 3600, // 1 hour (in seconds)
-    },
-  },
   expiresInRememberMe: 7_776_000, // 90 days (in seconds)
   mail: {
     // Docs: https://nodemailer.com/smtp/

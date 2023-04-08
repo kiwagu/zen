@@ -1,7 +1,6 @@
 import * as rfs from 'rotating-file-stream';
 import { MailerOptions } from '@nestjs-modules/mailer';
 import { NestApplicationOptions } from '@nestjs/common';
-import { JwtModuleOptions } from '@nestjs/jwt';
 import { ThrottlerModuleOptions } from '@nestjs/throttler';
 import { OTLPExporterNodeConfigBase } from '@opentelemetry/otlp-exporter-base';
 import { UploadOptions } from 'graphql-upload/graphqlUploadExpress.js';
@@ -23,7 +22,6 @@ export abstract class EnvironmentBase {
     readonly uploads?: UploadOptions;
   };
   readonly publicRegistration: boolean;
-  readonly jwtOptions: JwtModuleOptions;
   readonly expiresInRememberMe: number;
   readonly mail: Omit<MailerOptions, 'template'>;
   readonly throttle: ThrottlerModuleOptions;

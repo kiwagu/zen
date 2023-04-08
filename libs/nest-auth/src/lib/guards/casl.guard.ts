@@ -3,7 +3,6 @@ import { ClsService } from 'nestjs-cls';
 import { ContextType, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
-import { JwtService } from '@nestjs/jwt';
 import { RpcException } from '@nestjs/microservices';
 import { AuthGuard } from '@nestjs/passport';
 
@@ -36,7 +35,6 @@ export class CaslGuard extends AuthGuard('jwt') {
   constructor(
     private readonly reflector: Reflector,
     private readonly caslFactory: CaslFactory,
-    readonly jwtService: JwtService,
     readonly clsService: ClsService
   ) {
     super();
