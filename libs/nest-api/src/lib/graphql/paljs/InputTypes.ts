@@ -41,6 +41,7 @@ export default gql`
     password
     email
     roles
+    rules
     googleId
     googleProfile
   }
@@ -55,6 +56,7 @@ export default gql`
     password: StringNullableFilter
     email: StringFilter
     roles: StringNullableListFilter
+    rules: JsonNullableListFilter
     googleId: StringNullableFilter
     googleProfile: JsonNullableFilter
   }
@@ -66,6 +68,7 @@ export default gql`
     password: SortOrder
     email: SortOrder
     roles: SortOrder
+    rules: SortOrder
     googleId: SortOrder
     googleProfile: SortOrder
   }
@@ -84,6 +87,7 @@ export default gql`
     password: SortOrder
     email: SortOrder
     roles: SortOrder
+    rules: SortOrder
     googleId: SortOrder
     googleProfile: SortOrder
     _count: UserCountOrderByAggregateInput
@@ -101,6 +105,7 @@ export default gql`
     password: StringNullableWithAggregatesFilter
     email: StringWithAggregatesFilter
     roles: StringNullableListFilter
+    rules: JsonNullableListFilter
     googleId: StringNullableWithAggregatesFilter
     googleProfile: JsonNullableWithAggregatesFilter
   }
@@ -112,6 +117,7 @@ export default gql`
     password: String
     email: String!
     roles: [String!]
+    rules: [Json!]
     googleId: String
     googleProfile: Json
   }
@@ -123,6 +129,7 @@ export default gql`
     password: String
     email: String!
     roles: [String!]
+    rules: [Json!]
     googleId: String
     googleProfile: Json
   }
@@ -134,6 +141,7 @@ export default gql`
     password: String
     email: String
     roles: [String!]
+    rules: [Json!]
     googleId: String
     googleProfile: Json
   }
@@ -145,6 +153,7 @@ export default gql`
     password: String
     email: String
     roles: [String!]
+    rules: [Json!]
     googleId: String
     googleProfile: Json
   }
@@ -156,6 +165,7 @@ export default gql`
     password: String
     email: String!
     roles: [String!]
+    rules: [Json!]
     googleId: String
     googleProfile: Json
   }
@@ -167,6 +177,7 @@ export default gql`
     password: String
     email: String
     roles: [String!]
+    rules: [Json!]
     googleId: String
     googleProfile: Json
   }
@@ -178,6 +189,7 @@ export default gql`
     password: String
     email: String
     roles: [String!]
+    rules: [Json!]
     googleId: String
     googleProfile: Json
   }
@@ -231,6 +243,14 @@ export default gql`
     isEmpty: Boolean
   }
 
+  input JsonNullableListFilter {
+    equals: [Json!]
+    has: Json
+    hasEvery: [Json!]
+    hasSome: [Json!]
+    isEmpty: Boolean
+  }
+
   input JsonNullableFilter {
     equals: Json
     path: [String!]
@@ -254,6 +274,7 @@ export default gql`
     password: SortOrder
     email: SortOrder
     roles: SortOrder
+    rules: SortOrder
     googleId: SortOrder
     googleProfile: SortOrder
   }
@@ -349,6 +370,10 @@ export default gql`
     set: [String!]!
   }
 
+  input UserCreaterulesInput {
+    set: [Json!]!
+  }
+
   input StringFieldUpdateOperationsInput {
     set: String
   }
@@ -364,6 +389,11 @@ export default gql`
   input UserUpdaterolesInput {
     set: [String!]
     push: [String!]
+  }
+
+  input UserUpdaterulesInput {
+    set: [Json!]
+    push: [Json!]
   }
 
   input NestedStringFilter {
@@ -504,6 +534,7 @@ export default gql`
     password: Int!
     email: Int!
     roles: Int!
+    rules: Int!
     googleId: Int!
     googleProfile: Int!
     _all: Int!

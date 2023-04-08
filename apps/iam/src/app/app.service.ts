@@ -6,7 +6,6 @@ import { bcrypt } from 'hash-wasm';
 import { CaslFactory, JwtPayload, RequestUser } from '@zen/nest-auth';
 import { PrismaClient } from '@zen/nest-api/prisma';
 
-import { AppAbility } from './casl/casl.factory';
 import { ConfigService } from './config';
 import { JwtService } from './jwt';
 import { AuthSession } from './models/auth-session';
@@ -44,7 +43,7 @@ export class AppService {
 
     const token = this.jwtService.sign(jwtPayload, { expiresIn });
 
-    const ability = await this.createAbility(user);
+    const ability = this.caslFactory.createAbility(user);
 
     return {
       userId: user.id,
@@ -65,10 +64,6 @@ export class AppService {
         },
       },
     });
-  }
-
-  createAbility(user: RequestUser): Promise<AppAbility> {
-    return this.caslFactory.createAbility(user);
   }
 
   hashPassword(password: string) {

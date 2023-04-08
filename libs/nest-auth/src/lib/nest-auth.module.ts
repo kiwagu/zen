@@ -1,8 +1,9 @@
+import { ClsModule } from 'nestjs-cls';
+
 import { ContextType, DynamicModule, Global, Module, Provider, Type } from '@nestjs/common';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { RmqContext } from '@nestjs/microservices';
 import { PassportModule } from '@nestjs/passport';
-import { ClsModule } from 'nestjs-cls';
 
 import { CaslFactory } from './casl-factory';
 import { JwtPayload } from './models/jwt-payload';
@@ -32,8 +33,10 @@ import { JwtPayload } from './models/jwt-payload';
                   const user = {
                     id: jwtDecoded.sub,
                     roles: jwtDecoded.roles,
+                    rules: [],
                   };
-                  const ability = await caslFactory.createAbility(user);
+                  const ability = caslFactory.createAbility(user);
+                  user.rules = ability.rules as never[];
 
                   cls.set('rpcReq', {
                     header: (name: string) => headers[name],
@@ -53,12 +56,7 @@ import { JwtPayload } from './models/jwt-payload';
     JwtModule,
   ],
   exports: [PassportModule, ClsModule],
-  // providers: [
-  //   {
-  //     provide: APP_GUARD,
-  //     useClass: RpcGuard,
-  //   },
-  // ],
+  providers: [],
 })
 export class NestAuthModule {
   /**

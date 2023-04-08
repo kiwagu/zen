@@ -60,7 +60,7 @@ export class AppController {
   }
 
   @MessagePattern({ cmd: 'accountInfo' })
-  @UseGuards(RolesGuard('Super'))
+  @UseGuards(RolesGuard())
   async accountInfo(@CurrentUser() currentUser: RequestUser) {
     const user = await this.prisma.user.findUnique({
       where: { id: currentUser.id },

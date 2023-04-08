@@ -1,11 +1,11 @@
+import { ClsService } from 'nestjs-cls';
+
 import { ContextType, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { JwtService } from '@nestjs/jwt';
 import { RpcException } from '@nestjs/microservices';
 import { AuthGuard } from '@nestjs/passport';
-
-import { ClsService } from 'nestjs-cls';
 
 import { ApiError, RpcError } from '@zen/common';
 
@@ -66,21 +66,18 @@ export class CaslGuard extends AuthGuard('jwt') {
       try {
         await super.canActivate(context);
       } catch (error) {
-        try {
-          await super.canActivate(context);
-        } catch (error) {
-          if (error instanceof UnauthorizedException) {
-            throw new RpcException({
-              response: ApiError.AuthCommon.UNAUTHORIZED,
-              status: 400,
-              message: 'Unauthorized',
-              name: RpcException.name,
-            } as RpcError);
-          }
-
-          throw error;
+        if (error instanceof UnauthorizedException) {
+          throw new RpcException({
+            response: ApiError.AuthCommon.UNAUTHORIZED,
+            status: 400,
+            message: 'Unauthorized',
+            name: RpcException.name,
+          } as RpcError);
         }
+
+        throw error;
       }
+
       req = this.getRequest(context);
     } else {
       throw new UnauthorizedException(`Context ${type} not supported`);

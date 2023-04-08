@@ -31,6 +31,7 @@ export type User = { [key: string]: Resolver<any, any, any> } & {
   password?: Resolver<Client.User, {}, string | null>;
   email?: Resolver<Client.User, {}, string>;
   roles?: Resolver<Client.User, {}, string[] | null>;
+  rules?: Resolver<Client.User, {}, any[] | null>;
   googleId?: Resolver<Client.User, {}, string | null>;
   googleProfile?: Resolver<Client.User, {}, any | null>;
 };
@@ -81,6 +82,7 @@ export type UserGroupByOutputType = {
   password?: Resolver<Client.Prisma.UserGroupByOutputType, {}, string | null>;
   email?: Resolver<Client.Prisma.UserGroupByOutputType, {}, string>;
   roles?: Resolver<Client.Prisma.UserGroupByOutputType, {}, string[] | null>;
+  rules?: Resolver<Client.Prisma.UserGroupByOutputType, {}, any[] | null>;
   googleId?: Resolver<Client.Prisma.UserGroupByOutputType, {}, string | null>;
   googleProfile?: Resolver<Client.Prisma.UserGroupByOutputType, {}, any | null>;
   _count?: Resolver<
@@ -113,6 +115,7 @@ export type UserCountAggregateOutputType = {
   password?: Resolver<Client.Prisma.UserCountAggregateOutputType, {}, number>;
   email?: Resolver<Client.Prisma.UserCountAggregateOutputType, {}, number>;
   roles?: Resolver<Client.Prisma.UserCountAggregateOutputType, {}, number>;
+  rules?: Resolver<Client.Prisma.UserCountAggregateOutputType, {}, number>;
   googleId?: Resolver<Client.Prisma.UserCountAggregateOutputType, {}, number>;
   googleProfile?: Resolver<Client.Prisma.UserCountAggregateOutputType, {}, number>;
   _all?: Resolver<Client.Prisma.UserCountAggregateOutputType, {}, number>;
@@ -248,6 +251,7 @@ export interface UserWhereInput {
   password?: StringNullableFilter | null;
   email?: StringFilter;
   roles?: StringNullableListFilter;
+  rules?: JsonNullableListFilter;
   googleId?: StringNullableFilter | null;
   googleProfile?: JsonNullableFilter;
 }
@@ -259,6 +263,7 @@ export interface UserOrderByWithRelationInput {
   password?: SortOrder;
   email?: SortOrder;
   roles?: SortOrder;
+  rules?: SortOrder;
   googleId?: SortOrder;
   googleProfile?: SortOrder;
 }
@@ -277,6 +282,7 @@ export interface UserOrderByWithAggregationInput {
   password?: SortOrder;
   email?: SortOrder;
   roles?: SortOrder;
+  rules?: SortOrder;
   googleId?: SortOrder;
   googleProfile?: SortOrder;
   _count?: UserCountOrderByAggregateInput;
@@ -294,6 +300,7 @@ export interface UserScalarWhereWithAggregatesInput {
   password?: StringNullableWithAggregatesFilter | null;
   email?: StringWithAggregatesFilter;
   roles?: StringNullableListFilter;
+  rules?: JsonNullableListFilter;
   googleId?: StringNullableWithAggregatesFilter | null;
   googleProfile?: JsonNullableWithAggregatesFilter;
 }
@@ -305,6 +312,7 @@ export interface UserCreateInput {
   password?: string | null;
   email: string;
   roles?: UserCreaterolesInput;
+  rules?: UserCreaterulesInput;
   googleId?: string | null;
   googleProfile?: NullableJsonNullValueInput;
 }
@@ -316,6 +324,7 @@ export interface UserUncheckedCreateInput {
   password?: string | null;
   email: string;
   roles?: UserCreaterolesInput;
+  rules?: UserCreaterulesInput;
   googleId?: string | null;
   googleProfile?: NullableJsonNullValueInput;
 }
@@ -327,6 +336,7 @@ export interface UserUpdateInput {
   password?: string | null;
   email?: string;
   roles?: UserUpdaterolesInput;
+  rules?: UserUpdaterulesInput;
   googleId?: string | null;
   googleProfile?: NullableJsonNullValueInput;
 }
@@ -338,6 +348,7 @@ export interface UserUncheckedUpdateInput {
   password?: string | null;
   email?: string;
   roles?: UserUpdaterolesInput;
+  rules?: UserUpdaterulesInput;
   googleId?: string | null;
   googleProfile?: NullableJsonNullValueInput;
 }
@@ -349,6 +360,7 @@ export interface UserCreateManyInput {
   password?: string | null;
   email: string;
   roles?: UserCreaterolesInput;
+  rules?: UserCreaterulesInput;
   googleId?: string | null;
   googleProfile?: NullableJsonNullValueInput;
 }
@@ -360,6 +372,7 @@ export interface UserUpdateManyMutationInput {
   password?: string | null;
   email?: string;
   roles?: UserUpdaterolesInput;
+  rules?: UserUpdaterulesInput;
   googleId?: string | null;
   googleProfile?: NullableJsonNullValueInput;
 }
@@ -371,6 +384,7 @@ export interface UserUncheckedUpdateManyInput {
   password?: string | null;
   email?: string;
   roles?: UserUpdaterolesInput;
+  rules?: UserUpdaterulesInput;
   googleId?: string | null;
   googleProfile?: NullableJsonNullValueInput;
 }
@@ -424,6 +438,14 @@ export interface StringNullableListFilter {
   isEmpty?: boolean;
 }
 
+export interface JsonNullableListFilter {
+  equals?: any[] | null;
+  has?: any | null;
+  hasEvery?: any[];
+  hasSome?: any[];
+  isEmpty?: boolean;
+}
+
 export interface JsonNullableFilter {
   equals?: any;
   path?: string[];
@@ -447,6 +469,7 @@ export interface UserCountOrderByAggregateInput {
   password?: SortOrder;
   email?: SortOrder;
   roles?: SortOrder;
+  rules?: SortOrder;
   googleId?: SortOrder;
   googleProfile?: SortOrder;
 }
@@ -542,6 +565,10 @@ export interface UserCreaterolesInput {
   set: string[];
 }
 
+export interface UserCreaterulesInput {
+  set: any[];
+}
+
 export interface StringFieldUpdateOperationsInput {
   set?: string;
 }
@@ -557,6 +584,11 @@ export interface NullableStringFieldUpdateOperationsInput {
 export interface UserUpdaterolesInput {
   set?: string[];
   push?: string;
+}
+
+export interface UserUpdaterulesInput {
+  set?: any[];
+  push?: any;
 }
 
 export interface NestedStringFilter {
@@ -714,6 +746,7 @@ export enum UserScalarFieldEnum {
   password = 'password',
   email = 'email',
   roles = 'roles',
+  rules = 'rules',
   googleId = 'googleId',
   googleProfile = 'googleProfile',
 }

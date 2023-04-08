@@ -1,13 +1,13 @@
 import { createWriteStream, existsSync, mkdirSync } from 'fs';
 
 import { Inject, Logger, OnModuleInit, UseGuards } from '@nestjs/common';
-import { Args, Mutation, Query, Resolver, Subscription } from '@nestjs/graphql';
+import { Args, Mutation, Resolver, Subscription } from '@nestjs/graphql';
 import { ClientProxy } from '@nestjs/microservices';
 import { CurrentUser, RequestUser, RolesGuard } from '@zen/nest-auth';
 import { PubSub } from 'graphql-subscriptions';
 import gql from 'graphql-tag';
 import GraphQLUpload from 'graphql-upload/GraphQLUpload.js';
-import { interval, throwError, timeout } from 'rxjs';
+import { interval } from 'rxjs';
 
 import type { Upload } from '../models';
 

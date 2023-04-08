@@ -1,8 +1,8 @@
 import { GraphQLResolveInfo } from 'graphql';
 import { gql } from 'graphql-tag';
 
-import { Inject, UseGuards } from '@nestjs/common';
-import { Args, Info, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
+import { Inject } from '@nestjs/common';
+import { Args, Info, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { ClientProxy } from '@nestjs/microservices';
 
 import type { NonNullableFields } from '@zen/common';
@@ -19,7 +19,6 @@ import type {
   UpsertOneUserArgs,
 } from '@zen/nest-api/graphql/resolversTypes';
 import { DefaultFields, PrismaSelectService, User } from '@zen/nest-api/prisma';
-import { CaslFactory, CaslGuard } from '@zen/nest-auth';
 
 import { DEFAULT_FIELDS_TOKEN } from '../../auth';
 
@@ -30,25 +29,12 @@ export const typeDefs = gql`
 `;
 
 @Resolver('User')
-@UseGuards(CaslGuard)
 export class UserResolver {
   constructor(
     @Inject(DEFAULT_FIELDS_TOKEN) private readonly defaultFields: DefaultFields,
     private readonly prismaSelect: PrismaSelectService,
-    private readonly caslFactory: CaslFactory,
     @Inject('IAM_SERVICE') private client: ClientProxy
   ) {}
-
-  @ResolveField()
-  password() {
-    return null;
-  }
-
-  @ResolveField()
-  async rules(@Parent() parent: User) {
-    const ability = await this.caslFactory.createAbility(parent);
-    return ability.rules;
-  }
 
   @Query()
   findUniqueUser(
