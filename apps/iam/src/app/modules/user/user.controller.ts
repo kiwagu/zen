@@ -2,7 +2,6 @@ import { subject } from '@casl/ability';
 
 import { Controller, Inject, UseGuards } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
-import { PrismaClient } from '@prisma/client';
 
 import { NonNullableFields, Role } from '@zen/common';
 import {
@@ -17,7 +16,7 @@ import {
   UpdateOneUserArgs,
   UpsertOneUserArgs,
 } from '@zen/nest-api/graphql/resolversTypes';
-import { DefaultFields, PrismaService, User } from '@zen/nest-api/prisma';
+import { DefaultFields, PrismaClient, PrismaService, User } from '@zen/nest-api/prisma';
 import { CaslAbility, CaslGuard, RpcForbiddenException } from '@zen/nest-auth';
 
 import { AppAbility, AppCaslFactory } from '../../casl/casl.factory';
@@ -26,14 +25,21 @@ import { DEFAULT_FIELDS_TOKEN } from '../../casl/default-fields';
 @Controller()
 @UseGuards(CaslGuard)
 export class UserController {
-  prismax: PrismaClient;
+  prismax: ReturnType<typeof this.getExtendedPrismaClient>;
 
   constructor(
     private readonly prisma: PrismaService,
     @Inject(DEFAULT_FIELDS_TOKEN) private readonly defaultFields: DefaultFields,
     private readonly caslFactory: AppCaslFactory
   ) {
-    this.prismax = prisma.$extends({
+    this.prismax = this.getExtendedPrismaClient(prisma, caslFactory);
+  }
+
+  // Life-hack as described here
+  // https://echobind.com/post/extending-types-for-prisma-extensions-in-nextjs
+  getExtendedPrismaClient = (prisma: PrismaClient, caslFactory: AppCaslFactory) =>
+    prisma.$extends({
+      name: 'prismax',
       result: {
         user: {
           password: {
@@ -60,7 +66,6 @@ export class UserController {
         },
       },
     });
-  }
 
   @MessagePattern({ query: 'findFirstUser' })
   async findFirstUser(
@@ -68,7 +73,7 @@ export class UserController {
     @CaslAbility() ability: AppAbility
   ) {
     const user = await this.prismax.user.findFirst(payload);
-    if (ability.cannot('read', subject('User', user))) throw new RpcForbiddenException();
+    if (ability.cannot('read', subject('User', user as User))) throw new RpcForbiddenException();
     return user;
   }
 
@@ -78,17 +83,17 @@ export class UserController {
     @CaslAbility() ability: AppAbility
   ) {
     const user = await this.prismax.user.findUnique(payload);
-    if (ability.cannot('read', subject('User', user))) throw new RpcForbiddenException();
+    if (ability.cannot('read', subject('User', user as User))) throw new RpcForbiddenException();
     return user;
   }
 
   @MessagePattern({ query: 'findManyUser' })
   async findManyUser(@Payload() payload: FindManyUserArgs, @CaslAbility() ability: AppAbility) {
-    const records = await this.prismax.user.findMany(payload);
-    for (const record of records) {
-      if (ability.cannot('read', subject('User', record))) throw new RpcForbiddenException();
+    const users = await this.prismax.user.findMany(payload);
+    for (const user of users) {
+      if (ability.cannot('read', subject('User', user as User))) throw new RpcForbiddenException();
     }
-    return records;
+    return users;
   }
 
   @MessagePattern({ query: 'findManyUserCount' })
@@ -118,23 +123,23 @@ export class UserController {
     @Payload() payload: NonNullableFields<UpdateOneUserArgs>,
     @CaslAbility() ability: AppAbility
   ) {
-    const record = await this.prismax.user.findUnique({
+    const user = await this.prismax.user.findUnique({
       where: payload.where,
       select: this.defaultFields.User,
     });
-    if (ability.cannot('update', subject('User', record as User)))
+    if (ability.cannot('update', subject('User', user as User)))
       throw new RpcForbiddenException();
     return this.prismax.user.update(payload);
   }
 
   @MessagePattern({ cmd: 'updateManyUser' })
   async updateManyUser(@Payload() payload: UpdateManyUserArgs, @CaslAbility() ability: AppAbility) {
-    const records = await this.prismax.user.findMany({
+    const users = await this.prismax.user.findMany({
       where: payload.where,
       select: this.defaultFields.User,
     });
-    for (const record of records) {
-      if (ability.cannot('update', subject('User', record as User)))
+    for (const user of users) {
+      if (ability.cannot('update', subject('User', user as User)))
         throw new RpcForbiddenException();
     }
     return this.prismax.user.updateMany(payload);
@@ -142,12 +147,12 @@ export class UserController {
 
   @MessagePattern({ cmd: 'upsertOneUser' })
   async upsertOneUser(@Payload() payload: UpsertOneUserArgs, @CaslAbility() ability: AppAbility) {
-    const record = await this.prismax.user.findFirst({
+    const user = await this.prismax.user.findFirst({
       where: payload.where,
       select: this.defaultFields.User,
     });
     if (
-      (record && ability.cannot('update', subject('User', record as User))) ||
+      (user && ability.cannot('update', subject('User', user as User))) ||
       ability.cannot('create', subject('User', payload.create as any))
     ) {
       throw new RpcForbiddenException();
@@ -160,23 +165,23 @@ export class UserController {
     @Payload() payload: NonNullableFields<DeleteOneUserArgs>,
     @CaslAbility() ability: AppAbility
   ) {
-    const record = await this.prismax.user.findUnique({
+    const user = await this.prismax.user.findUnique({
       where: payload.where,
       select: this.defaultFields.User,
     });
-    if (ability.cannot('delete', subject('User', record as User)))
+    if (ability.cannot('delete', subject('User', user as User)))
       throw new RpcForbiddenException();
     return this.prismax.user.delete(payload);
   }
 
   @MessagePattern({ cmd: 'deleteManyUser' })
   async deleteManyUser(@Payload() payload: DeleteManyUserArgs, @CaslAbility() ability: AppAbility) {
-    const records = await this.prismax.user.findMany({
+    const users = await this.prismax.user.findMany({
       where: payload.where,
       select: this.defaultFields.User,
     });
-    for (const record of records) {
-      if (ability.cannot('delete', subject('User', record as User)))
+    for (const user of users) {
+      if (ability.cannot('delete', subject('User', user as User)))
         throw new RpcForbiddenException();
     }
     return this.prismax.user.deleteMany(payload);
