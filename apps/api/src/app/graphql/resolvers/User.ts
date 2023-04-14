@@ -20,7 +20,8 @@ import type {
 } from '@zen/nest-api/graphql/resolversTypes';
 import { DefaultFields, PrismaSelectService, User } from '@zen/nest-api/prisma';
 
-import { DEFAULT_FIELDS_TOKEN } from '../../auth';
+import { DEFAULT_FIELDS_TOKEN } from '../default-fields';
+
 
 export const typeDefs = gql`
   extend type User {

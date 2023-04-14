@@ -3,17 +3,17 @@ import { Global, Module } from '@nestjs/common';
 import { APP_FILTER } from '@nestjs/core';
 import { GraphQLModule } from '@nestjs/graphql';
 
-import { ZenAuthModule } from '../auth';
-import { ConfigModule } from '../config';
 import { PrismaModule } from '@zen/nest-api/prisma';
+
+import { ConfigModule } from '../config';
 import { RpcExceptionFilter } from './filters/rpc-exceptions.filter';
 import { GqlConfigService } from './gql-config.service';
 import { NEST_RESOLVERS } from './resolvers';
+import { defaultFieldsProvider } from './default-fields';
 
 @Global()
 @Module({
   imports: [
-    ZenAuthModule,
     PrismaModule,
     GraphQLModule.forRootAsync({
       driver: ApolloDriver,
@@ -22,6 +22,7 @@ import { NEST_RESOLVERS } from './resolvers';
     }),
   ],
   providers: [
+    defaultFieldsProvider,
     {
       provide: APP_FILTER,
       useClass: RpcExceptionFilter,

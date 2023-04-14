@@ -14,6 +14,7 @@ import { ConfigModule, ConfigService } from './config';
 import { ToolsController } from './controllers';
 import { ZenGraphQLModule } from './graphql';
 import { ClientRMQExt } from './libs/client-rmq-ext';
+import { ZenAuthModule } from './auth';
 
 @Global()
 @Module({
@@ -38,6 +39,7 @@ import { ClientRMQExt } from './libs/client-rmq-ext';
       useFactory: (config: ConfigService) => config.throttle,
     }),
     ConfigModule,
+    ZenAuthModule,
     ZenGraphQLModule,
     ClientsModule.register([
       {
