@@ -1,20 +1,20 @@
 import { Request } from 'express';
-import graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.js';
 import { ClsModule } from 'nestjs-cls';
+import graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.js';
 
 import { Global, MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { ClientsModule } from '@nestjs/microservices';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ThrottlerModule } from '@nestjs/throttler';
 
-import { GqlWithBodyParser, loggerInterceptor, LoggerModule } from '@zen/logger';
+import { ClientRMQExt } from '@zen/nest-auth';
+import { GqlWithBodyParser, LoggerModule, loggerInterceptor } from '@zen/logger';
 import { PrismaModule } from '@zen/nest-api/prisma';
 
 import { environment } from '../environments/environment';
+import { ZenAuthModule } from './auth';
 import { ConfigModule, ConfigService } from './config';
 import { ToolsController } from './controllers';
 import { ZenGraphQLModule } from './graphql';
-import { ClientRMQExt } from './libs/client-rmq-ext';
-import { ZenAuthModule } from './auth';
 
 @Global()
 @Module({
@@ -41,17 +41,21 @@ import { ZenAuthModule } from './auth';
     ConfigModule,
     ZenAuthModule,
     ZenGraphQLModule,
-    ClientsModule.register([
+    ClientsModule.registerAsync([
       {
         name: 'IAM_SERVICE',
-        customClass: ClientRMQExt,
-        options: {
-          urls: ['amqp://rabbitmq:5672'],
-          queue: 'iam-queue',
-          queueOptions: {
-            durable: true,
+        useFactory: (config: ConfigService) => ({
+          customClass: ClientRMQExt,
+          transport: Transport.RMQ,
+          options: {
+            urls: [config.broker.url],
+            queue: 'iam-queue',
+            queueOptions: {
+              durable: true,
+            },
           },
-        },
+        }),
+        inject: [ConfigService],
       },
     ]),
     PrismaModule,

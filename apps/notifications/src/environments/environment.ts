@@ -7,6 +7,7 @@ import { EnvironmentBase, serviceName } from './environment.base';
 export const environment: EnvironmentBase = {
   serviceName,
   siteUrl: 'http://localhost:4200/#',
+  broker: { url: process.env.BROKER_URL || 'amqp://rabbitmq:5672' },
   production: false,
   expressPort: 7080,
   publicRegistration: true,

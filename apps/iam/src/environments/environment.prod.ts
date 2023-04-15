@@ -3,6 +3,7 @@ import { EnvironmentBase, serviceName } from './environment.base';
 export const environment: EnvironmentBase = {
   serviceName,
   siteUrl: 'https://site.com/#',
+  broker: { url: process.env.BROKER_URL || 'amqp://rabbitmq:5672' },
   production: true,
   expressPort: process.env.PORT as string,
   publicRegistration: true,

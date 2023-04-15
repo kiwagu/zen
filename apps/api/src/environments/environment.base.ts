@@ -9,7 +9,10 @@ import { StrategyOptions as GoogleStrategyOptions } from 'passport-google-oauth2
 export const serviceName = 'api';
 
 export abstract class EnvironmentBase {
-  serviceName: string;
+  readonly serviceName: string;
+  readonly broker: {
+    url: string;
+  }
   readonly siteUrl: string;
   readonly production: boolean;
   readonly expressPort: string | number;

@@ -2,7 +2,7 @@ import { Global, Module, Provider } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 
 import { LoggerModule, RabbitMqWithBodyParser, loggerInterceptor } from '@zen/logger';
-import { NestAuthModule } from '@zen/nest-auth';
+import { ClientRMQExt, NestAuthModule } from '@zen/nest-auth';
 import { PrismaModule } from '@zen/nest-api/prisma';
 
 import { environment } from '../environments/environment';
@@ -10,7 +10,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AppCaslFactory } from './casl/casl.factory';
 import { defaultFieldsProvider } from './casl/default-fields';
-import { ConfigModule } from './config';
+import { ConfigModule, ConfigService } from './config';
 import { JwtModule } from './jwt';
 import { UserModule } from './modules/user/user.module';
 import { GoogleOAuthStrategy } from './strategies/google-oauth.strategy';
@@ -30,17 +30,21 @@ if (environment.oauth?.google?.clientID) oauthProviders.push(GoogleOAuthStrategy
     PrismaModule,
     NestAuthModule.register(AppCaslFactory),
     JwtModule,
-    ClientsModule.register([
+    ClientsModule.registerAsync([
       {
         name: 'MAIL_SERVICE',
-        transport: Transport.RMQ,
-        options: {
-          urls: ['amqp://rabbitmq:5672'],
-          queue: 'notifications-queue',
-          queueOptions: {
-            durable: true,
+        useFactory: (config: ConfigService) => ({
+          customClass: ClientRMQExt,
+          options: {
+            transport: Transport.RMQ,
+            urls: [config.broker.url],
+            queue: 'notifications-queue',
+            queueOptions: {
+              durable: true,
+            },
           },
-        },
+        }),
+        inject: [ConfigService],
       },
     ]),
     UserModule,
