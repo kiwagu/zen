@@ -4,7 +4,6 @@ import { loggerInterceptor, LoggerModule, RabbitMqWithBodyParser } from '@zen/lo
 import { environment } from '../environments/environment';
 
 import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { ConfigModule } from './config';
 import { MailModule } from './mail';
 
@@ -15,6 +14,6 @@ import { MailModule } from './mail';
     MailModule,
   ],
   controllers: [AppController],
-  providers: [AppService, loggerInterceptor],
+  providers: [loggerInterceptor],
 })
 export class AppModule {}

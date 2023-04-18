@@ -27,7 +27,7 @@ export const environment: EnvironmentBase = {
     // Docs: https://nodemailer.com/smtp/
     transport: {
       host: process.env.SMTP_SERVER,
-      port: process.env.SMTP_SERVER_PORT,
+      port: +(process.env.SMTP_SERVER_PORT || 1025),
       secure: false, // true for port 465, false for other ports
       auth: {
         user: process.env.SMTP_LOGIN,

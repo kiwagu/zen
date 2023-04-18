@@ -8,15 +8,20 @@ import { ConfigModule, ConfigService } from '../config';
 import { JwtModule } from '../jwt';
 import { MailService } from './mail.service';
 
+const templateDir = path.join(
+  __dirname,
+  process.env.NODE_ENV === 'test' ? '../..' : '',
+  '/assets/mail'
+);
+
 @Module({
   imports: [
     JwtModule,
     MailerModule.forRootAsync({
       useFactory: async (config: ConfigService) => ({
         ...config.mail,
-
         template: {
-          dir: path.join(__dirname, 'assets/mail'),
+          dir: templateDir,
           adapter: new HandlebarsAdapter(),
           options: {
             strict: true,
