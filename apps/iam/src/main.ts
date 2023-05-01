@@ -6,12 +6,15 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 
 import { AppModule } from './app/app.module';
 import { LoggerService } from '@zen/logger';
+import { ConfigModule, ConfigService } from './app/config';
 
 async function bootstrap() {
+  const config = await NestFactory.createApplicationContext(ConfigModule);
+  const configService = config.get<ConfigService>(ConfigService);
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
     transport: Transport.RMQ,
     options: {
-      urls: ['amqp://rabbitmq:5672'],
+      urls: [configService.broker.url],
       queue: 'iam-queue',
       queueOptions: {
         durable: true,
@@ -23,6 +26,7 @@ async function bootstrap() {
 
   app.useLogger(logger);
 
+  await config.close();
   await app.listen();
 
   Logger.log(`🚀 IAM service is running`);
