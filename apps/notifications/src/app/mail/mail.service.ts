@@ -1,33 +1,31 @@
-import { ISendMailOptions, MailerService } from '@nestjs-modules/mailer';
-import { Injectable, Logger } from '@nestjs/common';
+import { Queue } from 'bull';
+
+import { InjectQueue } from '@nestjs/bull';
+import { Injectable } from '@nestjs/common';
 
 import { ConfigService } from '../config';
 import { JwtService } from '../jwt';
 import { GeneralContext, PasswordResetContext } from './contexts';
-
-type MailOptions = ISendMailOptions & { template?: string };
+import { MAIL_QUEUE } from './mail.constant';
 
 @Injectable()
 export class MailService {
   constructor(
-    private readonly mailer: MailerService,
+    @InjectQueue(MAIL_QUEUE.NAME) private mailQueue: Queue,
     private readonly jwtService: JwtService,
     private readonly config: ConfigService
   ) {}
-  //--------------------------------------------------------------------------
-  send(options: MailOptions) {
-    Logger.log(`Sent ${options.template} email to ${options.to}`);
-    return this.mailer.sendMail(options).catch(e => Logger.error(e, options));
-  }
+
   //--------------------------------------------------------------------------
   sendGeneral(options: { to: string; subject: string; context: GeneralContext }) {
-    return this.send({
+    return this.mailQueue.add(MAIL_QUEUE.GENERAL, {
       template: 'general',
       to: options.to,
       subject: options.subject,
       context: options.context,
-    }).then();
+    });
   }
+
   //--------------------------------------------------------------------------
   sendPasswordReset(user: { id: string; email: string }) {
     const token = this.jwtService.sign({ sub: user.id, aud: user.email }, { expiresIn: '1d' });
@@ -37,11 +35,11 @@ export class MailService {
       resetUrl: `${this.config.siteUrl}/password-reset-confirmation?token=${encodeURI(token)}`,
     };
 
-    return this.send({
+    return this.mailQueue.add(MAIL_QUEUE.RESET_PASSWORD, {
       template: 'password-reset',
       to: user.email,
       subject: `Password Reset Request`,
       context,
-    }).then();
+    });
   }
 }
